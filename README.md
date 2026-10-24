@@ -1,207 +1,111 @@
-# Enshrouded Save Editor
+<p align="center">
+  <img src=".github/capa.png" alt="Enshrouded Save Editor" width="100%">
+</p>
 
-Reads and edits Enshrouded character saves, with the interface drawn from the game's own screens.
-It works on your **local saves**, and — if the server runs the companion
-[Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian) — on the **character copies stored on a
-dedicated server**.
+<h1 align="center">Enshrouded Save Editor</h1>
 
-*Leia em [português](README.pt-BR.md).*
+<p align="center">
+  <b>Edit your Enshrouded character with an interface that looks like the game itself.</b><br>
+  Backpack, equipment, skill tree, gems and knowledge — on local saves or on your dedicated server.
+</p>
 
-> **No support.** This is published so the community can use it, read it and improve it. There is no
-> help desk, no guaranteed fixes and no roadmap. Fork it, change it, ship it — the license lets you.
-> Issues and pull requests may sit unanswered.
+<p align="center">
+  <a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/nicolasferreiraxn/Enshrouded-Save-Editor?style=for-the-badge&label=download&color=d4a537" alt="Download"></a>
+  <a href="../../actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/nicolasferreiraxn/Enshrouded-Save-Editor/build.yml?style=for-the-badge&label=build" alt="Build"></a>
+  <img src="https://img.shields.io/badge/Enshrouded-1.0-8b3fd1?style=for-the-badge" alt="Enshrouded 1.0">
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-2b6cb0?style=for-the-badge&logo=windows" alt="Windows">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3c9d5d?style=for-the-badge" alt="MIT"></a>
+</p>
 
-## Features
+<p align="center">
+  🇺🇸 English · 🇧🇷 <a href="README.pt-BR.md">Português</a>
+</p>
 
-**Character**
+---
 
-- Level and xp
-- The skill tree — the real one, drawn with the game's own layout and node positions
-- It refuses to save a tree the game would reject, because an invalid tree makes the game refund
-  every point on load
+## ✨ What it does
 
-**Backpack**
+| | |
+|---|---|
+| 🧙 **Character** | level and xp; the **real** skill tree, with the game's own layout and positions — and it refuses to save a tree the game would reject (which would make the game refund every point) |
+| 🎒 **Backpack** | the 40 slots, the ALT bar and the action bar in the right place; the worn backpack's container at its real size; a catalog of every item in the game, drag to move, duplicate, remove; filters by category, rarity and tier |
+| 🛡️ **Equipment** | the paper doll with all 16 slots (armor, vanity, rings, shield, grappling hook, glider, backpack) — and it won't let you take off a backpack that still has things inside |
+| 💎 **Any item in detail** | level, amount, durability, upgrades, rarity and **the gem socketed in a weapon** (swap, remove, change its level) |
+| 📜 **Knowledge** | discoveries and recipes, with search by name or id and a level filter |
+| 🏰 **Dedicated server** | with [Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian), the server's character copies show up in the same list — edit, kick the player, and they come back with your version |
+| 💾 **Always a backup** | a backup before every save, restorable from inside the app |
+| 🌍 **Portuguese and English** | switch on the bottom bar; adding a language is one JSON file |
 
-- The 40 main slots, the ALT bar and the action bar, each in its place
-- The worn backpack's container, sized from the backpack you actually have equipped
-- Add from a searchable catalogue of every item in the game, remove, drag to move, duplicate
-- Filters by category, rarity and tier; search by name in Portuguese or English
+Every new item is created with the extra fields that item type really stores, measured on real saves — that's why
+what you create in the editor works in the game.
 
-**Worn equipment**
+## 🚀 Getting started
 
-- The doll with all 16 slots: armour, appearance, rings, shield, grappling hook, glider, backpack
-- Remove a worn piece
-- It blocks removing a worn backpack that still has things inside, because that would delete the
-  container and everything in it
+1. Download **`enshrouded-save-editor.exe`** from **[Releases](../../releases/latest)**.
+2. Run it. Nothing to install — everything is inside the executable.
+3. Pick your save and edit. **Ctrl+S** saves (with a backup first).
 
-**Any item in detail**
+> ⚠️ Edit with the **game closed**. The game rewrites the save while it's running.
 
-- Level, quantity, durability, upgrade pips, rarity
-- **The gem socketed in a weapon:** swap it, remove it, or change the gem's level
-- New items are created with the extra fields that item type actually stores, measured from real
-  saves — creating one with the wrong fields produces a broken item in the game
+## 🏰 With or without a server
 
-**Knowledge**
+**Without the guardian**, it opens the `.ksd` files your game writes locally.
 
-- Discoveries and recipes, searchable by name or id, filterable by level
-- Shows what each entry is (item, recipe, other) and its state
+**With the guardian**, the copies stored on the server appear next to your local saves:
 
-**Dedicated server** (needs [Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian))
+1. Edit a player's copy and save.
+2. Kick the player (or ask them to relog).
+3. On the next join the guardian enforces the stored copy — they come back with your version.
 
-- The stored character copies appear in the same list as your local saves
-- Edit a copy, kick the player, and they come back with your version
-- Reads the guardian's log and explains, in plain words, why a save was rejected
-- Live refresh while a player is connected, and it refuses to overwrite your pending edit
+The editor also reads the guardian's `rejected/` folder (`recusados/`) and explains, in plain words, what a rejected
+save carried: level and xp difference, extra or missing items, items that only moved between containers, and
+diverging discoveries.
 
-**General**
+<details>
+<summary><b>Setting up with the guardian, step by step</b></summary>
+<br>
 
-- **Portuguese and English**, switchable in the bottom bar, remembered between sessions.
-  Adding a language is one JSON file — see [Translating](#translating)
-- Backups before every write, restorable from inside the app
-- Local saves and server copies in one list
+**1. On the server.** Install the guardian: stop the server, put its `dbghelp.dll` next to `enshrouded_server.exe`
+and start the server. **Ask every player to join once** — the guardian only has someone's copy after seeing their
+save. To confirm, look for the `guardiao-dados/` folder with one subfolder per Steam ID.
 
-## Works with or without a server
+**2. SFTP details.** In your host's panel (usually *File Manager → SFTP Details*): address, port, user and password.
+The port is **not** 22 on most game hosts — on Nodecraft, for example, it's 2022. If you self-host, it's that
+machine's own SSH/SFTP.
 
-**Without the guardian** it opens the `.ksd` saves your game writes locally. Backups are made before
-every write, and you can restore them from inside the app.
-
-**With the guardian** the stored server copies show up in the same list as the local saves. The flow
-is:
-
-1. Edit a player's copy and save
-2. Kick the player (or ask them to relog)
-3. On the next join the guardian enforces the stored copy — so the player comes back with your
-   version
-
-The editor also reads the guardian's `recusados/` folder and explains, in plain words, what a
-rejected save contained: level and xp differences, items the client had more or fewer of, items that
-merely moved between containers, and discoveries that differ. When the guardian did not keep the
-reference copy for that moment, it says so instead of producing a misleading comparison.
-
-Server access is over **SFTP**, configured inside the app (address, user, password, and the folder
-the guardian writes to). The host key is pinned on the first connection, so a different key later
-breaks the connection instead of silently trusting it.
-
-## Install
-
-Download `enshrouded-save-editor.exe` from the [Releases](../../releases) page and run it. Nothing to
-install: the interface resources travel inside the executable.
-
-Every release is **built by GitHub Actions from this repository** and the build log is public — see
-[`.github/workflows/build.yml`](.github/workflows/build.yml).
-
-## Setting it up with the guardian
-
-To edit the character copies of a dedicated server, the server needs
-[Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian) running, and the editor needs SFTP
-access to the server's folder. Nothing is installed on the players' machines — only on the server.
-
-### 1. On the server
-
-Install the guardian: stop the server, drop its `dbghelp.dll` next to `enshrouded_server.exe`, start
-the server. **Ask each player to join once.** The guardian only has a copy of someone after it has
-seen that player's save, and until then there is nothing for the editor to show.
-
-You can confirm it is working by looking for `guardiao-dados/` in the server folder. It should
-contain one folder per player, named with their Steam ID.
-
-### 2. Get the SFTP details
-
-From your host's panel. Managed hosts usually list them under *File Manager → SFTP Details*, or
-similar. You need the address, the port, the user and the password. The port is **not** 22 on most
-game hosts — Nodecraft uses 2022, for example.
-
-If you host the server yourself, this is whatever SSH/SFTP you already have on that machine.
-
-### 3. In the editor
-
-Open the **Server** tab and click **Set up server**, then fill in:
+**3. In the editor.** **Server** tab → **Configure server**:
 
 | field | what goes in it |
 |---|---|
-| **Address** | the server's address, without `sftp://` |
-| **Port (SFTP)** | from the panel; 2022 on many game hosts |
-| **User** | the SFTP user, which is often not your panel login |
-| **Password** | the SFTP password. It is stored on your machine only |
+| **Address** | the server address, without `sftp://` |
+| **Port (SFTP)** | the one from the panel; 2022 on many game hosts |
+| **User** | the SFTP user (often not your panel login) |
+| **Password** | the SFTP password — stored only on your machine |
 | **Server key** | leave empty the first time |
 | **Guardian folder** | `guardiao-dados`, unless you changed it |
 
-Click **Save**, then **Test connection**. It should report the guardian's mode — `aplicar` means it
-is enforcing, `observar` means it is only recording.
+**Save → Test connection.** It reports the guardian's mode: `aplicar` (enforcing the copy) or `observar` (only
+logging). Then **Pin seen key → Save**, so a different SSH key in the future drops the connection instead of being
+silently accepted.
 
-Then click **Pin seen key** and **Save** again. That stores the fingerprint of the server's SSH key,
-so a different key later stops the connection instead of being trusted silently. Do this once,
-after a connection you know worked.
+**4. Editing a player.** Pick the player, edit, **Ctrl+S**, and kick the player or ask them to relog.
 
-### 4. Editing a player
+**Before you rely on it:**
+- A connected player overwrites the copy every ~30 s. The editor warns you when the copy changes and won't discard
+  your edit — but the reliable moment to edit is with the player offline.
+- Backups of every save go to `Documents\Enshrouded-Backups\servidor\`.
+- The password is stored in plain text in `%APPDATA%\enshrouded-save-editor\servidor.json`, like most desktop
+  programs. If that bothers you, use an SFTP account restricted to that server.
+</details>
 
-The players now show up in the **Server** tab, and in the save list with a `server` tag.
+## 🌍 Translating
 
-1. Pick a player and edit whatever you need
-2. **Ctrl+S** to write the copy
-3. **Kick the player**, or ask them to leave and rejoin
+The interface ships in Portuguese and English. Adding a language is one file, and the translation key **is the
+Portuguese text itself** — so anything left untranslated shows in Portuguese, and nothing breaks.
 
-On the next join the guardian replaces what the client sends with the copy you edited. Until the
-player rejoins, nothing changes for them.
-
-### Things worth knowing before you rely on it
-
-- **A connected player keeps overwriting the copy.** The server saves roughly every 30 seconds, and
-  the guardian stores each save. The editor warns you when the copy changes under you, and refuses
-  to discard a pending edit. The reliable moment to edit is with the player offline.
-- **Knowledge edits** (discoveries and recipes) take effect the same way — on the next join.
-- **Backups** of every write go to `Documents\Enshrouded-Backups\servidor\`, one folder per write.
-- **The password is stored in plain text** in the editor's config file
-  (`%APPDATA%\enshrouded-save-editor\servidor.json`), like most desktop tools do. If that matters to
-  you, use an SFTP account scoped to that server rather than your main one.
-
-## Build it yourself
-
-Two things: Node 20+ and the Rust toolchain for `x86_64-pc-windows-msvc`.
-
-```
-npm ci
-npm run dist
-```
-
-The result is `src-tauri/target/release/enshrouded-save-editor.exe`.
-
-That is the whole build. There is no asset pipeline to run, no Python, no extra tooling: the
-interface resources are committed ready-to-use in `build-assets/`, and the Rust side embeds that
-folder at compile time.
-
-For development, `npm run dev` opens it with hot reload.
-
-### Tests
-
-```
-npm test
-```
-
-Three self-contained suites: the gem socket encoding, the extra fields each item type stores, and a
-parse-and-rebuild round trip. The round trip can also run against real saves:
-
-```
-node tests/ida-e-volta.mjs <folder with A.bin files>
-```
-
-It requires the rebuilt block to be **byte for byte identical** to the original, which is what keeps
-editing one field from quietly rewriting another.
-
-## Translating
-
-The interface ships in Portuguese and English. Adding a language is one file, and you do not need to
-understand the rest of the code.
-
-The translation key **is the Portuguese text**. So a key you do not translate shows up in
-Portuguese instead of showing up as `menu.button.save`, and nothing breaks while a translation is
-incomplete.
-
-1. Copy `src/i18n/en.json` to `src/i18n/<code>.json` — `es.json`, `de.json`, `fr.json`…
-2. Translate the **values**, leaving the Portuguese keys untouched
-3. Keep the `{placeholders}` exactly as they are: they get replaced with numbers and names, and the
-   app looks for them by name, so you can move them around the sentence
-4. Register it in `IDIOMAS`, at the top of [`src/i18n.js`](src/i18n.js):
+1. Copy `src/i18n/en.json` to `src/i18n/<code>.json` (`es.json`, `de.json`…).
+2. Translate the **values**, leave the keys alone, and keep the `{placeholders}` (they can move within the sentence).
+3. Register it in `IDIOMAS`, at the top of [`src/i18n.js`](src/i18n.js):
 
 ```js
 import es from './i18n/es.json';
@@ -213,59 +117,75 @@ export const IDIOMAS = [
 ];
 ```
 
-`nome` is what shows in the language picker — write it in the language itself. `locale` is what
-formats dates and sorts names.
+Item and skill names come from the game's own localization (`data/items.json`, in Portuguese and English).
 
-Item and skill names are not part of this: they come from the game's own localisation, stored in
-`data/items.json`, which carries Portuguese and English. A third language would show a translated
-interface with item names still in one of those two, because it would need the game's localisation
-for that language — and regenerating `data/` is outside this repository.
+## 🛠️ Building
 
-If you change a Portuguese string in the source, the key changes with it. Update the key in every
-`src/i18n/*.json`, or that string silently falls back to Portuguese.
+Releases are built by **GitHub Actions** from this repository, with a
+[public log](../../actions/workflows/build.yml).
 
-## Save format notes
+Locally, with Node 20+ and Rust (`x86_64-pc-windows-msvc`):
 
-The format is not documented anywhere; everything here came from measurement. The parts that cost
-the most:
+```
+npm ci
+npm run dist        # src-tauri/target/release/enshrouded-save-editor.exe
+```
 
-- **The equipment list is dense and indexed through a bit mask.** Piece `k` occupies the k-th bit
-  set in a 32-bit mask, followed by a u16 of free slots. Ignore the mask and, with one ring missing,
-  everything after it shows up one slot early on the doll.
-- **Flag `0x08` is appearance (4 bytes).** Not knowing it made the equipment list unreadable, and the
-  parser then "found" equipment in the middle of the backpack and wrote a broken save.
-- **An item's level already includes its upgrades.** A ring whose range is 30–30 appears at 30 with
-  no upgrades, 34 with four, 35 with five. Changing upgrades without changing level makes the game
+No asset pipeline, no Python: the interface assets come ready in `build-assets/`. For development, `npm run dev`. To
+test, `npm test` — it includes a round trip that requires the rebuilt save to be **byte-for-byte identical** to the
+original. On its own it runs against a synthetic block covering every combination of an item's extra fields, which
+checks the reader against the writer. Proving the format itself takes real saves:
+`node tests/ida-e-volta.mjs <folder with A.bin>`.
+
+<details>
+<summary><b>Save format notes</b></summary>
+<br>
+
+The format isn't documented anywhere; everything here came from measurement.
+
+- **The equipment list is dense and indexed by a bitmask.** Piece `k` takes the k-th set bit of a 32-bit mask,
+  followed by a u16 of free slots.
+- **Flag `0x08` is vanity (4 bytes).** Without knowing it, the parser "found" equipment in the middle of the backpack
+  and wrote a broken save.
+- **An item's level already includes its upgrades.** Changing upgrades without changing the level makes the game
   discard the edit.
-- **The gem socketed in a weapon is 5 bytes:** the gem's itemId (u32) followed by its level (u8).
-- **The worn backpack sets the size of the extra container**, and it has to be found by the item's
-  type, not by its index in the dense list — that index changes with the mask.
-- **Knowledge** is an 8-byte header (`containerState`, `n`), then `n` ids and `n` values. A recipe is
-  not stored as "unlocked": the game recomputes it from discoveries, so removing the material locks
-  it again.
+- **A socketed gem is 5 bytes:** the gem's itemId (u32) + its level (u8).
+- **The worn backpack sets the size of the extra container**, found by item type, not by index.
+- **Knowledge** is an 8-byte header (`containerState`, `n`), then `n` ids and `n` values. Recipes aren't stored as
+  "unlocked": the game recomputes them from discoveries.
+</details>
 
-## Game data
-
-Two folders, both committed, so a clone builds with nothing else installed:
+<details>
+<summary><b>Game data</b></summary>
+<br>
 
 | folder | what it is |
 |---|---|
-| `data/*.json` | the item table, the skill tree, the knowledge map, and which extra fields each item type stores — about 2 MB, imported by the source |
-| `build-assets/game/` | the icons, interface textures and fonts the app draws with, already trimmed to what is actually referenced — about 26 MB, embedded in the executable |
+| `data/*.json` | item table, skill tree, knowledge map and extra fields per item type (~2 MB) |
+| `build-assets/game/` | icons, interface textures and fonts, trimmed to what's used (~26 MB, embedded in the exe) |
 
-These were prepared from an installed copy of the game. **Regenerating them is not part of this
-repository**: the extraction scripts live outside it, so after a game update that changes item ids or
-names, the data here goes stale until someone regenerates and commits it. If you need that and it has
-not happened, open an issue — but see the no-support note at the top.
+Prepared from an installed copy of the game. Regenerating isn't part of this repository: after an update that changes
+ids or names, the data goes stale until someone regenerates it.
+</details>
 
-Item names come from the game's own localisation and are stored with Portuguese and English side by
-side, which is why the catalogue search accepts either.
+## 🧩 Same family
 
-## Credits and third parties
+| | |
+|---|---|
+| 🗺️ **[Enshrouded Interactive Map](https://github.com/nicolasferreiraxn/Enshrouded-Interactive-Map)** | real-time map on your second monitor: your position, friends and everything already done |
+| 🛡️ **[Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian)** | makes the dedicated server the authority over each player's character |
 
-For reading game resources we used
-[kfc-parser / Enshrouded Mod Loader](https://github.com/Brabb3l/kfc-parser) by brabb3l.
+## ❤️ Credits
 
-## License
+- **[kfc-parser / Enshrouded Mod Loader](https://github.com/Brabb3l/kfc-parser)** by brabb3l — used to read the
+  game's resources.
+- **Keen Games** — for Enshrouded.
 
-MIT — see [LICENSE](LICENSE). Not affiliated with or endorsed by Keen Games.
+---
+
+<p align="center">
+  <sub>
+    Fan project, not affiliated with Keen Games. No official support — use, read, modify and publish freely.<br>
+    Code under <a href="LICENSE">MIT</a>.
+  </sub>
+</p>
