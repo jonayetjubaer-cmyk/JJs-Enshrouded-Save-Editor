@@ -1,7 +1,7 @@
 // Tela "Habilidades": canvas de 8000x8000 com centro em (4000,4000), como no SkillTreeResource.
 // Texturas, larguras nominais, ligações, anel central e rótulos de classe vêm do FbUiBundle.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { skills } from './gamedata.js';
+import { skills, nomeDe } from './gamedata.js';
 import { ui, tex, ttex, rgba } from './ui.js';
 import { ASSET_BASE } from './platform.js';
 import { totalKey as totalKeyOf, checkTree } from './treecheck.js';
@@ -168,8 +168,11 @@ export default function SkillTree({ model, setModel, stage }) {
       </div>
       {hover && (
         <div className="st-tip">
-          <div className="detail-title">{hover.pt}</div>
+          <div className="detail-title">{nomeDe(hover, '')}</div>
           <div className="detail-sub">{hover.class} · {t('custo {n}', { n: hover.cost })}{hover.maxLevel ? ` · ${t('máx {n}', { n: hover.maxLevel })}` : ''}</div>
+          {/* A descrição sai em português em qualquer idioma: `data/skills.json` só traz `desc` em
+              português, ao contrário do nome, que vem nos dois. Corrigir é regerar `data/` com a
+              localização inglesa do jogo, o que não faz parte deste repositório. */}
           <div className="tip-desc">{hover.desc?.replace(/%k/g, '?')}</div>
           <div className="hint">{t('Clique: +1 nível · Botão direito: −1')}</div>
         </div>

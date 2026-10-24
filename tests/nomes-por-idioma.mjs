@@ -14,8 +14,10 @@ const skills = JSON.parse(fs.readFileSync(path.join(RAIZ, 'data', 'skills.json')
 // carrega o gamedata com o campo de nome fixado, para medir os dois idiomas sem tocar na interface
 async function carregar(campo) {
   const fonte = fs.readFileSync(path.join(RAIZ, 'src', 'gamedata.js'), 'utf8')
-    .replace(/^import\s+\{\s*campoDeNome\s*\}\s+from\s+'\.\/i18n\.js';$/gm,
-      `const campoDeNome = () => '${campo}';`)
+    // troca o import do i18n por versões fixas: o teste mede um idioma por vez, e o módulo real
+    // depende de localStorage e navigator. O `[^}]*` cobre o import crescer com mais nomes.
+    .replace(/^import\s+\{[^}]*\}\s+from\s+'\.\/i18n\.js';$/gm,
+      `const campoDeNome = () => '${campo}';\nconst localeAtual = () => '${campo === 'pt' ? 'pt-BR' : 'en-US'}';`)
     .replace(/^import\s+(\w+)\s+from\s+'\.\.\/data\/([\w.-]+)\.json';$/gm,
       (_, nome, arq) => `const ${nome} = ${fs.readFileSync(path.join(RAIZ, 'data', `${arq}.json`), 'utf8')};`);
   const tmp = path.join(RAIZ, `.gamedata-${campo}-${process.pid}.mjs`);
@@ -71,6 +73,45 @@ const nosFaltando = Object.keys(skills.nodes).filter((k) => {
   return (n.pt || '').trim() && !(n.en || '').trim();
 });
 conferir(nosFaltando.length === 0, `nós de habilidade com português e sem inglês: ${nosFaltando.length}`);
+
+// ------------------------------------------------------------------ guarda contra a reincidência
+//
+// Este bug já voltou duas vezes, sempre num arquivo novo: alguém escreve `item.pt` para pôr um nome
+// na tela e aquele ponto fica em português para sempre, com a interface em inglês. Os testes acima
+// não pegavam, porque só olham `gamedata.js`.
+//
+// A regra: uma linha que lê `.pt` sem citar `.en` na mesma linha está escolhendo um idioma, e isso
+// é errado — o nome tem de sair de `itemName`, `skillName` ou `nomeDe`. Linhas que citam os dois
+// estão tratando ambos (busca, reserva, o nome no outro idioma) e passam.
+//
+// Exceção: `attrs[...]` usa o nome em português como CHAVE da tabela de atributos, não como texto;
+// trocar ali quebraria a contagem. A exibição desses rótulos passa por t().
+const FONTES = ['src'];
+const EXCECAO = /attrs\s*\[/;
+const ehComentario = (l) => /^\s*(\/\/|\/\*|\*)/.test(l);
+
+function* arquivos(dir) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) yield* arquivos(p);
+    else if (/\.(js|jsx)$/.test(e.name) && !p.endsWith(`${path.sep}i18n.js`)) yield p;
+  }
+}
+
+const suspeitas = [];
+for (const raiz of FONTES) {
+  for (const arq of arquivos(path.join(RAIZ, raiz))) {
+    fs.readFileSync(arq, 'utf8').split('\n').forEach((linha, i) => {
+      if (ehComentario(linha) || EXCECAO.test(linha)) return;
+      if (!/\.pt\b|\['pt'\]|\["pt"\]/.test(linha)) return;
+      if (/\.en\b|\['en'\]|\["en"\]/.test(linha)) return; // trata os dois idiomas
+      suspeitas.push(`${path.relative(RAIZ, arq)}:${i + 1}  ${linha.trim()}`);
+    });
+  }
+}
+conferir(suspeitas.length === 0, suspeitas.length === 0
+  ? 'nenhum ponto do código escolhe o português direto'
+  : `pontos lendo .pt direto (use itemName/skillName/nomeDe):\n     ${suspeitas.join('\n     ')}`);
 
 console.log(`nomes por idioma: ${ok} certos, ${ruim} errados`);
 process.exit(ruim ? 1 : 0);

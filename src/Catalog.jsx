@@ -1,11 +1,11 @@
 // Catálogo de itens: categorias com os ícones do menu de produção do jogo, busca, filtros de
 // raridade e tier, grade de ícones e prévia antes de adicionar.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { items, CATEGORY_PT, newEntry } from './gamedata.js';
+import { items, CATEGORY_PT, newEntry, itemName } from './gamedata.js';
 import { ttex, itemIcon, rarityColor, RARITY_PT } from './ui.js';
 import { FancyPanel } from './ItemEditor.jsx';
 import { GameButton, Stepper, SlotView, tierOf } from './components.jsx';
-import { t } from './i18n.js';
+import { t, localeAtual, idiomaAtual, campoDeNome } from './i18n.js';
 
 const BASE_RARITY = { Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5 };
 const isArmor = (it) => it.category === 'Equipment' && /^Armour_(Head|UpperBody|Arms|LowerBody|Feet)$/.test(it.slot || '');
@@ -24,8 +24,9 @@ export const CATEGORIES = [
 ];
 const ALL = Object.entries(items)
   .filter(([, it]) => !['Customization', 'ColorPalette'].includes(it.category) && (it.pt || it.en))
-  .map(([id, it]) => ({ id: Number(id), ...it, r: BASE_RARITY[it.rarity] || 1, tier: tierOf(Number(id)), q: `${it.pt || ''} ${it.en || ''} ${it.debug}`.toLowerCase() }))
-  .sort((a, b) => (a.pt || a.en).localeCompare(b.pt || b.en, 'pt'));
+  .map(([id, it]) => ({ id: Number(id), ...it, r: BASE_RARITY[it.rarity] || 1, tier: tierOf(Number(id)), q: `${it.pt || ''} ${it.en || ''} ${it.debug}`.toLowerCase() }));
+// Sem ordenar aqui: a ordem alfabética depende do idioma e isto roda uma vez só, na importação.
+// `q` junta os dois idiomas de propósito, para a busca achar o item escrevendo em qualquer um.
 const LIMIT = 280;
 
 export default function Catalog({ target, onAdd, onClose, nivel }) {
@@ -45,8 +46,10 @@ export default function Catalog({ target, onAdd, onClose, nivel }) {
   const filter = CATEGORIES.find((c) => c[0] === cat)[3];
   const list = useMemo(() => {
     const busca = q.trim().toLowerCase();
-    return ALL.filter((it) => filter(it) && (!busca || it.q.includes(busca)) && (!rar || it.r === rar) && (!tier || it.tier === tier));
-  }, [cat, q, rar, tier]);
+    return ALL.filter((it) => filter(it) && (!busca || it.q.includes(busca)) && (!rar || it.r === rar) && (!tier || it.tier === tier))
+      .sort((a, b) => itemName(a.id).localeCompare(itemName(b.id), localeAtual()));
+    // `idiomaAtual()` entra nas dependências porque o nome e a ordem mudam com o idioma
+  }, [cat, q, rar, tier, idiomaAtual()]);
   const counts = useMemo(() => Object.fromEntries(CATEGORIES.map(([k, , , f]) => [k, ALL.filter(f).length])), []);
 
   const choose = (it) => { setPick(it); setQty(it.maxStack > 1 ? it.maxStack : 1); };
@@ -84,7 +87,7 @@ export default function Catalog({ target, onAdd, onClose, nivel }) {
           </div>
           <div className="cat-grid">
             {list.slice(0, LIMIT).map((it) => (
-              <div key={it.id} className="cat-tile" onClick={() => choose(it)} onDoubleClick={() => { choose(it); setTimeout(add, 0); }} title={it.pt || it.en}>
+              <div key={it.id} className="cat-tile" onClick={() => choose(it)} onDoubleClick={() => { choose(it); setTimeout(add, 0); }} title={itemName(it.id)}>
                 <SlotView entry={{ itemId: it.id, count: it.maxStack }} selected={pick?.id === it.id} inCatalog />
               </div>
             ))}
@@ -97,11 +100,14 @@ export default function Catalog({ target, onAdd, onClose, nivel }) {
               <div className="ed-icon big" style={{ background: `radial-gradient(circle, ${rarityColor(pick.r).replace(/[\d.]+\)$/, '0.45)')} 0%, transparent 70%)` }}>
                 <img src={itemIcon(pick.id)} alt="" />
               </div>
-              <div className="detail-title" style={{ color: rarityColor(pick.r), textAlign: 'center' }}>{pick.pt || pick.en}</div>
+              <div className="detail-title" style={{ color: rarityColor(pick.r), textAlign: 'center' }}>{itemName(pick.id)}</div>
               <div className="detail-sub" style={{ textAlign: 'center' }}>
                 {t(CATEGORY_PT[pick.category] || pick.category)}{pick.tier ? ` · ${t('Tier {n}', { n: pick.tier })}` : ''} · {t(RARITY_PT[pick.r])}
               </div>
-              {pick.en && pick.pt && <div className="hint" style={{ textAlign: 'center' }}>{pick.en}</div>}
+              {/* o nome no outro idioma, que ajuda a casar com guias e vídeos escritos nele */}
+              {pick.en && pick.pt && (
+                <div className="hint" style={{ textAlign: 'center' }}>{campoDeNome() === 'pt' ? pick.en : pick.pt}</div>
+              )}
               {pick.maxStack > 1 && (
                 <div className="ed-row"><div className="ed-label">{t('Quantidade')}</div>
                   <div className="ed-ctrl"><Stepper value={qty} min={1} max={pick.maxStack} steps={[1, 10]} onChange={setQty} /></div></div>

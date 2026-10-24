@@ -8,6 +8,7 @@ import { parseCharacter, buildCharacter } from '../shared/character.mjs';
 import * as know from '../shared/knowledge.mjs';
 import { compararSaves, motivoEmTexto } from '../shared/recusa.mjs';
 import items from '../data/items.json';
+import { itemName } from './gamedata.js';
 import skills from '../data/skills.json';
 import mapaConhecimento from '../data/conhecimento.json';
 import { t, dataHora } from './i18n.js';
@@ -270,8 +271,8 @@ export default {
     if (!escolhidos.length) return [];
     const atual = await loadServidor(steamid);
     const servidor = { ...atual.character, knowledge: atual.knowledge?.entries ?? [] };
-    const nomeItem = (id) => items[id]?.pt ?? t('id {id}', { id });
-    const nomeConhecimento = (id) => mapaConhecimento[id]?.n ?? items[id]?.pt ?? t('id {id}', { id });
+    const nomeItem = (id) => (items[id] ? itemName(id) : t('id {id}', { id }));
+    const nomeConhecimento = (id) => mapaConhecimento[id]?.n ?? (items[id] ? itemName(id) : t('id {id}', { id }));
     const out = [];
     for (const { carimbo, tipo, quando: quandoArq } of escolhidos) {
       const arquivo = `${carimbo.slice(0, 8)}_${carimbo.slice(8)}_${tipo}.bin`;

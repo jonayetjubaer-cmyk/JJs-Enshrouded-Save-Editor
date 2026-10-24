@@ -1,21 +1,24 @@
 import items from '../data/items.json';
 import skills from '../data/skills.json';
 import extras from '../data/item-extras.json';
-import { campoDeNome } from './i18n.js';
+import { campoDeNome, localeAtual } from './i18n.js';
 
 export { items, skills };
 
 // O jogo traz cada nome em português e em inglês, os dois da localização oficial dele, e
 // `data/items.json` guarda os dois por item. Então não traduzimos nome de item à mão: lemos o campo
 // do idioma escolhido. O outro idioma serve de reserva para as entradas sem nome.
-const nomeNoIdioma = (o, reserva) => {
+// Exportado porque quem já tem o objeto em mãos (uma lista de catálogo, o nó sob o cursor) não
+// deve voltar à tabela pelo id só para ler o nome — e nunca deve ler `.pt` direto: foi assim que
+// a árvore de habilidades e o catálogo continuaram em português com a interface em inglês.
+export const nomeDe = (o, reserva) => {
   if (!o) return reserva;
   const campo = campoDeNome();
   return o[campo] || o[campo === 'pt' ? 'en' : 'pt'] || reserva;
 };
 
-export const itemName = (id) => nomeNoIdioma(items[id], items[id]?.debug || `#${id}`);
-export const skillName = (id) => nomeNoIdioma(skills.nodes[id], `#${id}`);
+export const itemName = (id) => nomeDe(items[id], items[id]?.debug || `#${id}`);
+export const skillName = (id) => nomeDe(skills.nodes[id], `#${id}`);
 
 // os valores são chaves de tradução: quem mostra passa por t()
 export const CATEGORY_PT = {
@@ -42,7 +45,9 @@ const skillList = Object.entries(skills.nodes)
 
 export function searchSkills(q) {
   const t = q.trim().toLowerCase();
-  return skillList.filter((n) => !t || n.search.includes(t)).sort((a, b) => (a.pt || '').localeCompare(b.pt || ''));
+  // a ordem alfabética é a do idioma escolhido, senão a lista em inglês sai ordenada por português
+  return skillList.filter((n) => !t || n.search.includes(t))
+    .sort((a, b) => nomeDe(a, '').localeCompare(nomeDe(b, ''), localeAtual()));
 }
 
 // Entrada nova para o inventário.
@@ -53,7 +58,8 @@ export function searchSkills(q) {
 //
 // `data/item-extras.json` traz a forma observada em saves reais, item por item, e tem a palavra
 // final quando o item está lá. Para o resto valem as regras por categoria, conferidas contra os
-// mesmos saves. O arquivo é gerado por tools/extrair_extras.py.
+// mesmos saves. O arquivo foi extraído de saves reais; regerá-lo não faz parte deste repositório,
+// como o resto de `data/` (ver a seção de dados do jogo no README).
 const RARIDADE = { Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5 };
 const SEM_EXTRAS = new Set(['Glider', 'HookShot', 'Invalid']); // planador, arpéu e chaves
 

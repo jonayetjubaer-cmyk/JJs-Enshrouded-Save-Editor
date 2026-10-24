@@ -1,7 +1,7 @@
 // Tela "Personagem": boneco de equipamento (armadura à esquerda, acessórios à direita, ferramentas
 // embaixo) em volta de um medalhão com nível e XP; o painel da direita edita a peça selecionada.
 import React, { useState } from 'react';
-import { skills, items } from './gamedata.js';
+import { skills, items, itemName } from './gamedata.js';
 import { tex, ttex } from './ui.js';
 import ItemEditor, { FancyPanel } from './ItemEditor.jsx';
 import { SlotView, Stepper, Separator } from './components.jsx';
@@ -47,7 +47,7 @@ export default function Character({ model, setModel }) {
   const remove = (e) => {
     // tirar a mochila vestida apaga o contêiner dela, e com ele tudo o que estava guardado
     if (items[e.itemId]?.slot === 'Backpack' && model.extra.length) {
-      setAviso(t('Não vou tirar a {item}: isso apagaria o contêiner dela e os {n} espaços guardados. Esvazie-o no jogo primeiro.', { item: items[e.itemId].pt, n: model.extra.length }));
+      setAviso(t('Não vou tirar a {item}: isso apagaria o contêiner dela e os {n} espaços guardados. Esvazie-o no jogo primeiro.', { item: itemName(e.itemId), n: model.extra.length }));
       return;
     }
     setAviso(null);

@@ -36,10 +36,10 @@ function escreveSoquete({ itemId, level }) {
   return b.map((x) => ('0' + x.toString(16)).slice(-2)).join('');
 }
 
-// as joias do catálogo, para o seletor; a ordem de nome depende do idioma, então sai no uso
+// as joias do catálogo, para o seletor; só os ids, porque nome e ordem dependem do idioma
 const JOIAS = Object.keys(items)
   .filter((id) => items[id].category === 'WeaponGem')
-  .map((id) => ({ id: Number(id), nome: items[id].pt || items[id].en || items[id].debug }));
+  .map((id) => Number(id));
 
 export default function ItemEditor({ entry, onChange, onRemove, onDuplicate, caption }) {
   const it = items[entry.itemId];
@@ -111,8 +111,8 @@ export default function ItemEditor({ entry, onChange, onRemove, onDuplicate, cap
                   setJoia({ itemId: id, level: id && !joia.itemId ? Math.max(1, items[id]?.minLevel || 1) : joia.level });
                 }}>
                 <option value={0}>{t('— sem joia —')}</option>
-                {[...JOIAS].sort((a, b) => a.nome.localeCompare(b.nome, localeAtual()))
-                  .map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
+                {[...JOIAS].sort((a, b) => itemName(a).localeCompare(itemName(b), localeAtual()))
+                  .map((id) => <option key={id} value={id}>{itemName(id)}</option>)}
               </select>
               {joia.itemId > 0 && !items[joia.itemId] && <span className="hint warn">{t('id {id} não está no catálogo', { id: joia.itemId })}</span>}
             </Row>

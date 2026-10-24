@@ -13,8 +13,10 @@ const items = JSON.parse(fs.readFileSync(path.join(RAIZ, 'data', 'items.json'), 
 // código-fonte, para o teste valer sobre o que roda de verdade. O i18n também é injetado: ele toca
 // localStorage e navigator, que não existem aqui, e o que o teste mede não depende do idioma.
 const fonte = fs.readFileSync(path.join(RAIZ, 'src', 'gamedata.js'), 'utf8')
-  .replace(/^import\s+\{\s*campoDeNome\s*\}\s+from\s+'\.\/i18n\.js';$/gm,
-    "const campoDeNome = () => 'pt';")
+  // o `[^}]*` cobre esse import crescer com mais nomes; preso em `{ campoDeNome }`, acrescentar um
+  // nome ali matava este teste com ERR_MODULE_NOT_FOUND em vez de falhar dizendo o motivo
+  .replace(/^import\s+\{[^}]*\}\s+from\s+'\.\/i18n\.js';$/gm,
+    "const campoDeNome = () => 'pt';\nconst localeAtual = () => 'pt-BR';")
   .replace(/^import\s+(\w+)\s+from\s+'\.\.\/data\/([\w.-]+)\.json';$/gm,
     (_, nome, arq) => `const ${nome} = ${fs.readFileSync(path.join(RAIZ, 'data', `${arq}.json`), 'utf8')};`);
 const tmp = path.join(RAIZ, `.gamedata-teste-${process.pid}.mjs`);
