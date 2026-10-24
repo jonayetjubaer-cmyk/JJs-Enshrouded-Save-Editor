@@ -293,3 +293,14 @@ select.g-input option { background: #1c1c34; }
 
 /* rótulo cuja quebra de linha vem do texto traduzido */
 .linhas { white-space: pre-line; }
+
+/* atributos e melhorias do item, no formato do tooltip do jogo */
+.ed-stats { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+.st-linha { display: grid; grid-template-columns: 110px 1fr; align-items: baseline; gap: 12px; font-size: 24px; }
+.st-valor { color: var(--gold); font-weight: 700; text-align: right; }
+.st-nome { color: #ddd; }
+.st-titulo { margin-top: 14px; color: var(--muted); }
+.st-melhoria { display: grid; grid-template-columns: 170px 1fr; align-items: baseline; gap: 12px; opacity: .45; }
+.st-melhoria.aplicada { opacity: 1; }
+.st-nivel { font-size: 20px; color: var(--muted); letter-spacing: 1.5px; }
+.st-efeitos { display: flex; flex-direction: column; gap: 2px; }

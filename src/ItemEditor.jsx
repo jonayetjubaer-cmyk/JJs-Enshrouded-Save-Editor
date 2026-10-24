@@ -4,6 +4,7 @@ import { items, itemName, CATEGORY_PT } from './gamedata.js';
 import { ui, tex, ttex, itemIcon, rgba, rarityOf, rarityColor } from './ui.js';
 import { GameButton, Stepper, RarityGems, UpgradePips, MeterBar, Separator, tierOf } from './components.jsx';
 import { t, localeAtual } from './i18n.js';
+import ItemStats from './ItemStats.jsx';
 
 export function FancyPanel({ children, style }) {
   return (
@@ -142,6 +143,8 @@ export default function ItemEditor({ entry, onChange, onRemove, onDuplicate, cap
         )}
       </div>
       {entry.maxUpgrades !== undefined && <div className="hint">{t('A raridade define quantas melhorias o item aceita: nível máximo = nível base + raridade.')}</div>}
+
+      <ItemStats entry={entry} />
 
       <div className="ed-actions">
         <Separator />

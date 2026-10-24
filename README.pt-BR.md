@@ -31,6 +31,7 @@
 | 🎒 **Mochila** | os 40 espaços, a barra ALT e a barra de ação no lugar certo; o contêiner da mochila vestida, com o tamanho real; catálogo com todos os itens do jogo, arrastar para mover, duplicar, remover; filtros por categoria, raridade e tier |
 | 🛡️ **Equipamento** | o boneco com os 16 espaços (armadura, aparência, anéis, protetor, gancho, planador, mochila) — e ele impede tirar uma mochila que ainda tem coisa dentro |
 | 💎 **Qualquer item em detalhe** | nível, quantidade, durabilidade, melhorias, raridade e **a joia encaixada na arma** (trocar, tirar, mudar o nível) |
+| ⚔️ **O que o item faz** | as linhas de atributo e as melhorias por nível, lidas dos recursos do próprio jogo e mostradas como o jogo mostra |
 | 📜 **Conhecimento** | descobertas e receitas, com busca por nome ou id e filtro por nível |
 | 🏰 **Servidor dedicado** | com o [Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian), as cópias de personagem do servidor aparecem na mesma lista — edite, expulse o jogador, e ele volta com a sua versão |
 | 💾 **Backup sempre** | backup antes de cada gravação, restaurável de dentro do aplicativo |
@@ -159,7 +160,7 @@ O formato não é documentado em lugar nenhum; tudo aqui saiu de medição.
 
 | pasta | o que é |
 |---|---|
-| `data/*.json` | tabela de itens, árvore de habilidades, mapa de conhecimento e campos extras por tipo de item (~2 MB) |
+| `data/*.json` | tabela de itens, árvore de habilidades, mapa de conhecimento, campos extras por tipo de item e as linhas de atributo e melhorias de cada item (~2,5 MB) |
 | `build-assets/game/` | ícones, texturas de interface e fontes, reduzidos ao que é usado (~26 MB, embutidos no exe) |
 
 Preparados a partir de uma cópia instalada do jogo. Regerar não faz parte deste repositório: depois de uma

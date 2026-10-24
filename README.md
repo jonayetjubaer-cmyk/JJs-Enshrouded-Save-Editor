@@ -31,6 +31,7 @@
 | 🎒 **Backpack** | the 40 slots, the ALT bar and the action bar in the right place; the worn backpack's container at its real size; a catalog of every item in the game, drag to move, duplicate, remove; filters by category, rarity and tier |
 | 🛡️ **Equipment** | the paper doll with all 16 slots (armor, vanity, rings, shield, grappling hook, glider, backpack) — and it won't let you take off a backpack that still has things inside |
 | 💎 **Any item in detail** | level, amount, durability, upgrades, rarity and **the gem socketed in a weapon** (swap, remove, change its level) |
+| ⚔️ **What the item does** | the attribute lines and the per-upgrade enhancements, read from the game's own resources and shown as the game shows them |
 | 📜 **Knowledge** | discoveries and recipes, with search by name or id and a level filter |
 | 🏰 **Dedicated server** | with [Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian), the server's character copies show up in the same list — edit, kick the player, and they come back with your version |
 | 💾 **Always a backup** | a backup before every save, restorable from inside the app |
@@ -161,7 +162,7 @@ The format isn't documented anywhere; everything here came from measurement.
 
 | folder | what it is |
 |---|---|
-| `data/*.json` | item table, skill tree, knowledge map and extra fields per item type (~2 MB) |
+| `data/*.json` | item table, skill tree, knowledge map, extra fields per item type, and each item's attribute lines and enhancements (~2.5 MB) |
 | `build-assets/game/` | icons, interface textures and fonts, trimmed to what's used (~26 MB, embedded in the exe) |
 
 Prepared from an installed copy of the game. Regenerating isn't part of this repository: after an update that changes
