@@ -23,6 +23,9 @@
 
 ---
 
+
+**Mudanças:** veja o [changelog](CHANGELOG.pt-BR.md).
+
 ## ✨ O que ele faz
 
 | | |

@@ -1,0 +1,76 @@
+# Mudanças
+
+*Read this in [English](CHANGELOG.md).*
+
+## 1.0.1 — 24/10/2026
+
+Primeira rodada de correções depois do lançamento, puxada por duas issues e muita captura de
+tela do jogo.
+
+### O que o item mostra ([#2](../../issues/2))
+
+Os itens agora mostram **o que de fato fazem**: as linhas de atributo e as melhorias por nível,
+lidas dos recursos do próprio jogo e dispostas como o jogo dispõe.
+
+- **Armadura** é calculada e mostrada por peça. A fórmula vem de um comentário que o próprio
+  estúdio compilou no jogo (`Base Armor = offset + ( gradient * item level )`), e foi conferida
+  contra ele: uma bota de nível 255 com distribuição 0,06 dá `(23 + 15 × 255) × 0,06 = 230,88`, e
+  o jogo escreve 231. **Não há corte no nível 55** nesse cálculo.
+- **Dano de arma** sai de `seed × dmgMod × speedMod × (1 + 0,15 × nível)`, e com ele as melhorias
+  que são uma fração dele — fração que o jogo escreve na tela ("10% de dano base"). Conferido num
+  par de adagas de nível 50: o jogo mostra +5.5, aqui mostra +5.5.
+- Melhorias que dão **armadura ou dano de um tipo** aparecem com o seu valor. As de armadura são
+  calculadas no nível da própria linha, que é como o jogo faz.
+- Cada linha de melhoria é rotulada com o **nível do item** naquele passo (251, 252, …), e não
+  com a posição dela.
+- Quantas linhas de melhoria aparecem é a **raridade** do item. Um Comum não anuncia mais as
+  cinco melhorias de um Lendário.
+
+### Limites conhecidos
+
+- **Arco, cajado e varinha mostram menos que o jogo.** A distribuição de dano deles é zero: não
+  carregam dano, ele vem do projétil. O número mostrado é só a parte que vem da arma, então um
+  arco marca 21,6 onde o jogo marca 21,5. Arma de corpo a corpo está exata.
+- **Os atributos na tela Personagem ficam abaixo dos do jogo.** Eles contam o que a árvore dá. O
+  jogo soma ainda os nós que dependem do nível da Chama e os bônus do equipamento, e nenhum dos
+  dois está no save do personagem. A tela avisa.
+- **A descrição dos nós de habilidade continua em português** em qualquer idioma:
+  `data/skills.json` só traz a descrição em português. O *nome* do nó é traduzido.
+
+### Idioma ([#1](../../issues/1))
+
+Nome de item e de habilidade segue o idioma escolhido, em todo lugar. Antes seguia em alguns e
+em outros não: a dica da árvore de habilidades, o catálogo de itens e a ordem dele, o seletor de
+joias, o aviso da mochila, o relatório de recusa e as mensagens de validação da árvore ficavam em
+português com a interface em inglês. A busca sempre funcionou, porque compara contra os dois
+idiomas — que foi exatamente o que o relato dizia.
+
+Agora um teste varre o código-fonte e reprova qualquer linha que leia o campo português direto.
+
+### Correções
+
+- **Durações** vêm em milissegundos e o jogo troca de unidade pelo tamanho: a velocidade de
+  ataque de uma arma marcava `774s` e agora marca `0,8s`; um efeito de 90 segundos marca
+  `1:30 m`.
+- A linha **"Nível do Item"** saiu da lista de atributos. O jogo a mantém no cabeçalho e não a
+  repete, e o valor gravado no arquivo é o nível *nominal* — então um machado de nível 11
+  anunciava 40.
+- O boneco de equipamento estava com as **colunas de armadura e aparência trocadas**. A armadura
+  vestida ocupa os bits 5 a 9 da máscara, que estavam rotulados "(2)" — por isso a coluna da
+  esquerda parecia vazia e a da direita cheia.
+- O painel de detalhes empurrava **Duplicar e Remover para fora**; agora ele rola, como o tooltip
+  do próprio jogo.
+- A janela abre em **1920×1080** (era 1600×900).
+
+### Por dentro
+
+- `data/item-stats.json`: linhas de atributo, melhorias e distribuições de dano e armadura de
+  1986 itens, mais as constantes de balanceamento (~700 KB).
+- `tests/todas-as-armas.mjs` varre os 1986 itens em três níveis e nos dois idiomas, reprovando
+  qualquer linha sem rótulo, com número inválido ou sem nada a mostrar. É o teste que teria pego
+  as linhas de melhoria em branco nos arcos.
+- 114 conferências em 6 conjuntos.
+
+## 1.0.0 — 24/10/2026
+
+Primeiro lançamento público.

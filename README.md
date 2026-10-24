@@ -23,6 +23,9 @@
 
 ---
 
+
+**Changes:** see the [changelog](CHANGELOG.md).
+
 ## ✨ What it does
 
 | | |

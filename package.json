@@ -1,6 +1,6 @@
 {
   "name": "enshrouded-save-editor",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "Editor de save do Enshrouded, com suporte às cópias do Enshrouded Server Guardian.",
   "main": "electron/main.cjs",
   "private": true,
