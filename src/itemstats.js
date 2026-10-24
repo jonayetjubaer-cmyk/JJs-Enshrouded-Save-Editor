@@ -9,7 +9,7 @@
 //
 // Uma linha é `{t: idDeTexto, v: valor, f: formato, s: tem sinal, e: [função, fator] se escala}`.
 import stats from '../data/item-stats.json';
-import { campoDeNome } from './i18n.js';
+import { campoDeNome, localeAtual } from './i18n.js';
 
 const { nomes, itens, balanceamento } = stats;
 
@@ -34,19 +34,36 @@ export function valorEscalado(funcao, fator, base, nivel) {
   return null;
 }
 
-/** Formata o número do jeito que o jogo formata. */
+// Decimal no separador do idioma: "0,77s" em português e "0.77s" em inglês. Os zeros à direita
+// saem, para 60000 ms virar "60s" e não "60,00s".
+const semZeros = (n, casas) => Number(n.toFixed(casas)).toLocaleString(localeAtual(), { maximumFractionDigits: casas });
+
+/**
+ * Formata o número do jeito que o jogo formata.
+ *
+ * O formato `Duration` vem em MILISSEGUNDOS: os valores do arquivo vão de 400 a 3.600.000, que é
+ * uma hora. Tratá-los como segundos punha "774s" na velocidade de ataque de um machado.
+ */
 function formatar(valor, formato, temSinal) {
   const sinal = temSinal && valor >= 0 ? '+' : '';
   switch (formato) {
     case '%': return `${sinal}${valor}%`;
-    case 's': return `${sinal}${valor}s`;
+    case 's': return `${sinal}${semZeros(valor / 1000, 2)}s`;
     case 'ms': return `${sinal}${valor} ms`;
-    case 'f': return `${sinal}${Number(valor).toFixed(2).replace(/\.?0+$/, '')}`;
+    case 'f': return `${sinal}${semZeros(Number(valor), 2)}`;
     default: return `${sinal}${valor}`;
   }
 }
 
+// A linha "Nível do Item" vem gravada com o nível NOMINAL do item (conferido: nos 604 itens que a
+// têm, o valor é sempre o `minLevel` da faixa). Quem manda é o nível que está no save — senão um
+// machado de nível 11 anuncia 40.
+const NIVEL_DO_ITEM = 2298204525;
+
 function linha(l, nivel) {
+  if (l.t === NIVEL_DO_ITEM && nivel !== undefined) {
+    return { nome: nomeDoTexto(l.t), valor: formatar(nivel, 'n', true), variaComNivel: false };
+  }
   const escala = l.e ? valorEscalado(l.e[0], l.e[1], l.v, nivel) : null;
   const valor = l.e ? escala : l.v;
   return {

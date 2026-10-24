@@ -13,7 +13,9 @@ const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // gamedata.js: o módulo real depende de localStorage e navigator, que não existem aqui
 async function carregar(campo) {
   const fonte = fs.readFileSync(path.join(RAIZ, 'src', 'itemstats.js'), 'utf8')
-    .replace(/^import\s+\{[^}]*\}\s+from\s+'\.\/i18n\.js';$/gm, `const campoDeNome = () => '${campo}';`)
+    .replace(/^import\s+\{[^}]*\}\s+from\s+'\.\/i18n\.js';$/gm,
+      `const campoDeNome = () => '${campo}';
+const localeAtual = () => '${campo === 'pt' ? 'pt-BR' : 'en-US'}';`)
     .replace(/^import\s+(\w+)\s+from\s+'\.\.\/data\/([\w.-]+)\.json';$/gm,
       (_, nome, arq) => `const ${nome} = ${fs.readFileSync(path.join(RAIZ, 'data', `${arq}.json`), 'utf8')};`);
   const tmp = path.join(RAIZ, `.itemstats-${campo}-${process.pid}.mjs`);
@@ -95,6 +97,35 @@ const m = await carregar('en');
 const parciais = m.melhoriasDe(ANEL, 2, 2);
 conferir(parciais.filter((x) => x.aplicada).length === 2,
   `com 2 melhorias aplicadas, ${parciais.filter((x) => x.aplicada).length} marcadas`);
+
+// --------------------------------------------------- duração e nível do item
+//
+// Os dois saíram errados na primeira versão, num print do Machado Folheado a Ouro: a velocidade
+// de ataque apareceu como "774s" (o formato Duration vem em milissegundos) e o nível do item
+// como "+40", que é o nível nominal gravado no arquivo, com o machado em 11 no save.
+const MACHADO = 246967425;  // Tool_T6_Axe_Steel_Gold_Wetlands
+const ANEL_VIGOR = 4079983357; // Ring_T6_Ring_of_Stamina, o do segundo print
+
+for (const [campo, velocidade, molhado, decimal] of [
+  ['pt', '0,77s', '60s', 'vírgula'],
+  ['en', '0.77s', '60s', 'ponto'],
+]) {
+  const mod = await carregar(campo);
+  const axe = mod.atributosDe(MACHADO, 11);
+  const vel = axe.find((l) => /Velocidade|Attack Speed/.test(l.nome));
+  conferir(vel?.valor === velocidade, `${campo}: velocidade de ataque = ${vel?.valor} (decimal com ${decimal})`);
+
+  const nivel = axe.find((l) => /Nível do Item|Item Level/.test(l.nome));
+  conferir(nivel?.valor === '+11', `${campo}: nível do item segue o save = ${nivel?.valor}, não o nominal (+40)`);
+
+  const anel = mod.atributosDe(ANEL_VIGOR, 255);
+  const seco = anel.find((l) => /Molhado|Wet/.test(l.nome));
+  conferir(seco?.valor === molhado, `${campo}: 60000 ms viram ${seco?.valor}`);
+  // e o que NÃO escala continua sem escalar, mesmo com o item em 255: os valores do jogo são
+  // autorais por tier (a família vai de +4 no nível 5 a +10 no 45), não calculados do nível
+  const vigor = anel.find((l) => /^Vigor$|^Stamina$/.test(l.nome));
+  conferir(vigor?.valor === '+9', `${campo}: anel em 255 continua ${vigor?.valor} Vigor, como no jogo`);
+}
 
 // item sem nada a mostrar não inventa seção
 conferir(m.temEstatisticas(999999999) === false, 'id desconhecido não tem estatísticas');
