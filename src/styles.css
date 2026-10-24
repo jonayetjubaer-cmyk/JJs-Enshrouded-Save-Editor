@@ -303,7 +303,8 @@ select.g-input option { background: #1c1c34; }
 .st-valor { color: var(--gold); font-weight: 700; text-align: right; }
 .st-nome { color: #ddd; }
 .st-titulo { margin-top: 14px; color: var(--muted); }
-.st-melhoria { display: grid; grid-template-columns: 170px 1fr; align-items: baseline; gap: 12px; opacity: .45; }
+.st-melhoria { display: grid; grid-template-columns: 170px 70px 1fr; align-items: baseline; gap: 12px; opacity: .45; }
 .st-melhoria.aplicada { opacity: 1; }
 .st-nivel { font-size: 20px; color: var(--muted); letter-spacing: 1.5px; }
+.st-ganho { font-size: 20px; color: var(--muted); text-align: right; }
 .st-efeitos { display: flex; flex-direction: column; gap: 2px; }

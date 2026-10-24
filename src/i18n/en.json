@@ -253,5 +253,7 @@
   "Últimas entradas": "Recent joins",
   "— sem joia —": "— no gem —",
   "aumenta o nível de {no} na árvore": "raises the skill level of {no}",
-  "As linhas sem número variam com o nível do item por uma conta que ainda não foi medida; o editor não mostra um valor que não pode garantir.": "The lines without a number scale with the item level by a formula that has not been measured yet; the editor does not show a value it cannot stand behind."
+  "As linhas sem número variam com o nível do item por uma conta que ainda não foi medida; o editor não mostra um valor que não pode garantir.": "The lines without a number scale with the item level by a formula that has not been measured yet; the editor does not show a value it cannot stand behind.",
+  "Armadura Física": "Physical Armour",
+  "Armadura Mágica": "Magical Armour"
 }

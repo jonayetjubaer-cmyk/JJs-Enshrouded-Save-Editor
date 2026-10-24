@@ -41,29 +41,39 @@ const semZeros = (n, casas) => Number(n.toFixed(casas)).toLocaleString(localeAtu
 /**
  * Formata o número do jeito que o jogo formata.
  *
- * O formato `Duration` vem em MILISSEGUNDOS: os valores do arquivo vão de 400 a 3.600.000, que é
- * uma hora. Tratá-los como segundos punha "774s" na velocidade de ataque de um machado.
+ * Tempo vem em MILISSEGUNDOS nos dois formatos de duração, e o jogo escolhe a unidade pelo
+ * tamanho: abaixo de um minuto mostra segundos com uma casa, de um minuto para cima mostra
+ * minuto:segundo. Conferido nas Botas de Andarilho do Vento, que trazem -500 e 90000 e aparecem
+ * no jogo como "-0.5s" e "1:30 m".
  */
+function tempo(ms, temSinal) {
+  const sinal = temSinal && ms >= 0 ? '+' : '';
+  if (Math.abs(ms) < 60000) return `${sinal}${semZeros(ms / 1000, 1)}s`;
+  const neg = ms < 0 ? '-' : sinal;
+  const total = Math.round(Math.abs(ms) / 1000);
+  const min = Math.floor(total / 60);
+  const seg = String(total % 60).padStart(2, '0');
+  return `${neg}${min}:${seg} m`;
+}
+
 function formatar(valor, formato, temSinal) {
   const sinal = temSinal && valor >= 0 ? '+' : '';
   switch (formato) {
     case '%': return `${sinal}${valor}%`;
-    case 's': return `${sinal}${semZeros(valor / 1000, 2)}s`;
-    case 'ms': return `${sinal}${valor} ms`;
+    case 's': case 'ms': return tempo(valor, temSinal);
     case 'f': return `${sinal}${semZeros(Number(valor), 2)}`;
     default: return `${sinal}${valor}`;
   }
 }
 
-// A linha "Nível do Item" vem gravada com o nível NOMINAL do item (conferido: nos 604 itens que a
-// têm, o valor é sempre o `minLevel` da faixa). Quem manda é o nível que está no save — senão um
-// machado de nível 11 anuncia 40.
+// A linha "Nível do Item" não vai para a lista: o jogo a consome no cabeçalho do tooltip
+// ("NÍVEL 255 / 255") e não a repete entre os atributos — conferido nas Botas de Andarilho do
+// Vento, que a trazem nos dados e não a mostram na tela. O editor já tem a sua própria linha de
+// nível. Além disso o valor gravado é o nível NOMINAL (nos 604 itens que a têm é sempre o
+// `minLevel`), então mostrá-lo faria um machado de nível 11 anunciar 40.
 const NIVEL_DO_ITEM = 2298204525;
 
 function linha(l, nivel) {
-  if (l.t === NIVEL_DO_ITEM && nivel !== undefined) {
-    return { nome: nomeDoTexto(l.t), valor: formatar(nivel, 'n', true), variaComNivel: false };
-  }
   const escala = l.e ? valorEscalado(l.e[0], l.e[1], l.v, nivel) : null;
   const valor = l.e ? escala : l.v;
   return {
@@ -77,28 +87,91 @@ function linha(l, nivel) {
 /** Linhas de atributo do item, como no tooltip do jogo. */
 export function atributosDe(itemId, nivel) {
   const reg = itens[itemId];
-  return (reg?.a || []).map((l) => linha(l, nivel));
+  return (reg?.a || []).filter((l) => l.t !== NIVEL_DO_ITEM).map((l) => linha(l, nivel));
 }
+
+/** Armadura bruta de um nível, antes de repartir por tipo. */
+const baseArmadura = (nivel) => {
+  const { offset, gradient } = balanceamento.armorSetup || {};
+  return offset === undefined ? null : offset + gradient * nivel;
+};
 
 /**
  * Melhorias do item, uma por nível de upgrade.
  *
- * A posição no vetor É o nível ("LEVEL 3"), então as posições vazias são mantidas — tirá-las
- * deslocaria todas as seguintes. `aplicada` diz se o item já chegou naquele nível de melhoria.
+ * O rótulo de cada linha é o NÍVEL DO ITEM naquele passo, não o índice: as botas de nível 255 com
+ * 5 melhorias mostram 251 a 255, e um anel de nível 4 mostra 0 a 4. É o nível base (o do item sem
+ * as melhorias) mais a posição, somando um.
+ *
+ * As posições vazias são mantidas — tirá-las deslocaria as seguintes. `aplicada` diz se o item já
+ * chegou naquele nível.
  */
 export function melhoriasDe(itemId, nivel, upgrades = 0) {
   const reg = itens[itemId];
   if (!reg?.p) return [];
-  return reg.p.map((m, i) => (m ? {
-    nivel: i,
-    aplicada: i < upgrades,
-    linhas: (m.v || []).map((l) => linha(l, nivel)),
-    no: m.no ?? null, // id do nó da árvore de habilidades, quando a melhoria dá nível nele
-  } : null)).filter(Boolean);
+  const base = (nivel ?? 0) - upgrades;
+  const dist = reg.r;
+  return reg.p.map((m, i) => {
+    if (!m) return null;
+    const nivelLinha = base + 1 + i;
+    const bruta = baseArmadura(nivelLinha);
+    const anterior = baseArmadura(nivelLinha - 1);
+
+    // armadura que ESTE nível acrescenta à peça (a coluna "Armadura" do jogo)
+    let ganho = null;
+    if (dist && bruta !== null) {
+      const sobe = (fr) => Math.round(bruta * fr) - Math.round(anterior * fr);
+      ganho = { fisica: sobe(dist.physical || 0), magica: sobe(dist.magical || 0) };
+    }
+
+    // melhoria que dá armadura de um tipo: vale no nível desta linha, não no nível final
+    let armadura = null;
+    if (m.ra && bruta !== null) {
+      const fr = Object.values(m.ra)[0] || 0;
+      armadura = { valor: Math.round(bruta * fr), nome: m.rn ? nomeDoTexto(m.rn) : '' };
+    }
+
+    return {
+      nivel: nivelLinha,
+      aplicada: i < upgrades,
+      linhas: (m.v || []).map((l) => linha(l, nivel)),
+      no: m.no ?? null, // id do nó da árvore de habilidades, quando a melhoria dá nível nele
+      ganho,
+      armadura,
+    };
+  }).filter(Boolean);
+}
+
+/**
+ * Armadura da peça, no nível em que ela está.
+ *
+ * `baseArmor = offset + gradient × nível` vem do comentário que o próprio estúdio compilou no
+ * jogo: em `keen::BalancingTable`, o campo `armorSetup` carrega o texto
+ * "Base Armor = offset + ( gradient * item level )". Os valores (23 e 15) saem da mesma tabela.
+ *
+ * A repartição por tipo é a `distribution` da peça, e é a parte que não está provada: sabemos que
+ * existem os nove atributos `ArmorPoints_<tipo>_Base` na mesma ordem dos nove campos da
+ * distribuição, mas a multiplicação em si não foi lida no binário. Apoia a hipótese a soma
+ * `physical + magical` dar 0,60 em todo conjunto de cinco peças, repartida conforme a classe
+ * (0,40/0,20 guerreiro, 0,30/0,30 caçador, 0,24/0,36 mago).
+ */
+export function armaduraDe(itemId, nivel) {
+  const reg = itens[itemId];
+  if (!reg?.r || nivel === undefined) return null;
+  const { offset, gradient } = balanceamento.armorSetup || {};
+  if (offset === undefined || gradient === undefined) return null;
+  // inteiro, como o jogo mostra: nas Botas de Andarilho do Vento em 255 a conta dá 230,88 e o
+  // jogo escreve 231
+  const base = offset + gradient * nivel;
+  return {
+    base: Math.round(base),
+    fisica: Math.round(base * (reg.r.physical || 0)),
+    magica: Math.round(base * (reg.r.magical || 0)),
+  };
 }
 
 /** Se há algo a mostrar para este item. */
 export const temEstatisticas = (itemId) => {
   const reg = itens[itemId];
-  return Boolean(reg && (reg.a || reg.p));
+  return Boolean(reg && (reg.a || reg.p || reg.r));
 };

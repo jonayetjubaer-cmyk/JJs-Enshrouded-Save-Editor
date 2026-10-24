@@ -98,29 +98,78 @@ const parciais = m.melhoriasDe(ANEL, 2, 2);
 conferir(parciais.filter((x) => x.aplicada).length === 2,
   `com 2 melhorias aplicadas, ${parciais.filter((x) => x.aplicada).length} marcadas`);
 
-// --------------------------------------------------- duração e nível do item
+// ------------------------------------------- armadura e melhorias, contra a captura do jogo
 //
-// Os dois saíram errados na primeira versão, num print do Machado Folheado a Ouro: a velocidade
-// de ataque apareceu como "774s" (o formato Duration vem em milissegundos) e o nível do item
-// como "+40", que é o nível nominal gravado no arquivo, com o machado em 11 no save.
-const MACHADO = 246967425;  // Tool_T6_Axe_Steel_Gold_Wetlands
-const ANEL_VIGOR = 4079983357; // Ring_T6_Ring_of_Stamina, o do segundo print
+// Referência: captura das Botas de Andarilho do Vento das Cinzas equipadas, nível 255/255, com as
+// cinco melhorias aplicadas. O que o jogo mostra ali está transcrito aqui. Esta é a medição que
+// transformou a fórmula da armadura de hipótese em fato: 23 + 15×255 = 3848, × 0,06 das botas =
+// 230,88, e o jogo escreve 231 — e não 51, que é o que daria se houvesse corte no nível 55.
+const BOTAS = 749923180; // Armor_T7_Ranger_Archer_DPS_Boots
 
-for (const [campo, velocidade, molhado, decimal] of [
-  ['pt', '0,77s', '60s', 'vírgula'],
-  ['en', '0.77s', '60s', 'ponto'],
+{
+  const mod = await carregar('pt');
+  const arm = mod.armaduraDe(BOTAS, 255);
+  conferir(arm?.fisica === 231 && arm?.magica === 231,
+    `botas em 255: armadura ${arm?.fisica}/${arm?.magica} (o jogo mostra 231/231)`);
+  conferir(mod.armaduraDe(BOTAS, 45)?.fisica === 42,
+    `botas no nível nominal 45: ${mod.armaduraDe(BOTAS, 45)?.fisica}`);
+
+  // as quatro linhas de atributo, na ordem e no formato da captura
+  const esperado = [
+    ['+21', 'Regeneração de Vigor'],
+    ['-0,5s', 'Atraso na regeneração da resistência'],
+    ['1:30 m', 'Redução de Duração de Molhado'],
+    ['+2', 'Resistência a gelo'],
+  ];
+  const linhas = mod.atributosDe(BOTAS, 255);
+  conferir(linhas.length === esperado.length,
+    `botas: ${linhas.length} linhas de atributo (o jogo mostra ${esperado.length}; "Nível do Item" fica no cabeçalho)`);
+  esperado.forEach(([valor, nome], i) => {
+    conferir(linhas[i]?.valor === valor && linhas[i]?.nome === nome,
+      `botas: ${linhas[i]?.valor} ${linhas[i]?.nome}`);
+  });
+
+  // as cinco melhorias: rótulo com o NÍVEL do item naquele passo, a coluna de armadura, e as
+  // melhorias de armadura calculadas no nível da própria linha
+  const esperadasM = [
+    [251, '+114', 'Armadura Contra Corte'],
+    [252, '+114', 'Armadura Contra Perfuração'],
+    [253, '+1', 'Corrida'],
+    [254, '+21', 'Regeneração de Vigor'],
+    [255, '+1', 'Corrida'],
+  ];
+  const ms = mod.melhoriasDe(BOTAS, 255, 5);
+  conferir(ms.length === 5, `botas: ${ms.length} melhorias`);
+  esperadasM.forEach(([nivel, valor, nome], i) => {
+    const m = ms[i] || {};
+    const efeito = m.armadura ? { valor: `+${m.armadura.valor}`, nome: m.armadura.nome } : (m.linhas || [])[0] || {};
+    conferir(m.nivel === nivel && efeito.valor === valor && efeito.nome === nome && m.ganho?.fisica === 1,
+      `botas: nível ${m.nivel} | +${m.ganho?.fisica}/+${m.ganho?.magica} | ${efeito.valor} ${efeito.nome}`);
+  });
+}
+
+// --------------------------------------------------- duração e nível nominal
+//
+// O formato de duração vem em MILISSEGUNDOS: num print do Machado Folheado a Ouro a velocidade de
+// ataque apareceu como "774s". E a linha "Nível do Item" vinha com o nível nominal do arquivo
+// (+40 num machado de nível 11), por isso ela não vai mais para a lista.
+const MACHADO = 246967425;  // Tool_T6_Axe_Steel_Gold_Wetlands
+const ANEL_VIGOR = 4079983357; // Ring_T6_Ring_of_Stamina
+
+for (const [campo, velocidade, decimal] of [
+  ['pt', '0,8s', 'vírgula'],
+  ['en', '0.8s', 'ponto'],
 ]) {
   const mod = await carregar(campo);
   const axe = mod.atributosDe(MACHADO, 11);
   const vel = axe.find((l) => /Velocidade|Attack Speed/.test(l.nome));
   conferir(vel?.valor === velocidade, `${campo}: velocidade de ataque = ${vel?.valor} (decimal com ${decimal})`);
-
-  const nivel = axe.find((l) => /Nível do Item|Item Level/.test(l.nome));
-  conferir(nivel?.valor === '+11', `${campo}: nível do item segue o save = ${nivel?.valor}, não o nominal (+40)`);
+  conferir(!axe.some((l) => /Nível do Item|Item Level/.test(l.nome)),
+    `${campo}: "Nível do Item" não aparece na lista`);
 
   const anel = mod.atributosDe(ANEL_VIGOR, 255);
   const seco = anel.find((l) => /Molhado|Wet/.test(l.nome));
-  conferir(seco?.valor === molhado, `${campo}: 60000 ms viram ${seco?.valor}`);
+  conferir(seco?.valor === '1:00 m', `${campo}: 60000 ms viram ${seco?.valor}`);
   // e o que NÃO escala continua sem escalar, mesmo com o item em 255: os valores do jogo são
   // autorais por tier (a família vai de +4 no nível 5 a +10 no 45), não calculados do nível
   const vigor = anel.find((l) => /^Vigor$|^Stamina$/.test(l.nome));
