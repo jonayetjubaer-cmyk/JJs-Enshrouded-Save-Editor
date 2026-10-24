@@ -12,10 +12,9 @@ Items now show **what they actually do**: the attribute lines and the enhancemen
 level, read from the game's own resources and laid out the way the game lays them out.
 
 - **Armour** is computed and shown per piece. The formula comes from a comment the studio itself
-  compiled into the game (`Base Armor = offset + ( gradient * item level )`), and it was checked
-  against the game: a pair of boots at level 255 with a 0.06 distribution gives
-  `(23 + 15 × 255) × 0.06 = 230.88`, and the game prints 231. There is **no cap at level 55** in
-  this calculation.
+  compiled into the game (`Base Armor = offset + ( gradient * item level )`), with the two
+  constants from the same table, and the result was checked against the game on a worn piece: the
+  computed value and the one on screen agree.
 - **Weapon damage** is computed from `seed × dmgMod × speedMod × (1 + 0.15 × level)` and the
   enhancements that are a fraction of it — the game writes that fraction on screen ("10% of base
   damage"). Checked against a pair of daggers at level 50: the game shows +5.5, this shows +5.5.

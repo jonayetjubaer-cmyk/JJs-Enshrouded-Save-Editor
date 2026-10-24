@@ -1,5 +1,3 @@
-// Bloco de atributos e melhorias do item, no formato do tooltip do jogo:
-// as linhas de atributo primeiro, depois "Melhorias" com uma linha por nível de upgrade.
 import React from 'react';
 import { atributosDe, melhoriasDe, temEstatisticas, armaduraDe, danoDe } from './itemstats.js';
 import { skillName, skills } from './gamedata.js';
@@ -18,20 +16,14 @@ export default function ItemStats({ entry }) {
   if (!temEstatisticas(entry.itemId)) return null;
   const nivel = entry.level;
   const atributos = atributosDe(entry.itemId, nivel);
-  // Quantas melhorias aparecem é a RARIDADE, não quantas já foram aplicadas: o vetor do jogo tem
-  // sempre cinco posições, mas um item Comum aceita uma e um Lendário cinco. Mostrar as cinco em
-  // todo item fazia um Comum anunciar melhorias de Lendário, que nunca iam acontecer. As que o
-  // item ainda não tem aparecem apagadas, porque essas ele pode alcançar.
+  // O vetor do jogo tem sempre cinco posições, mas quantas o item aceita é a RARIDADE: um Comum
+  // não pode anunciar as cinco melhorias de um Lendário.
   const teto = entry.maxUpgrades ?? 0;
   const melhorias = melhoriasDe(entry.itemId, nivel, entry.upgrades ?? 0).filter((m) => m.pos < teto);
   if (!atributos.length && !melhorias.length) return null;
 
-  // uma linha cujo valor depende do nível e cuja conta ainda não conhecemos aparece sem número,
-  // com este aviso embaixo — em vez de um número inventado
   const temVariavel = [...atributos, ...melhorias.flatMap((m) => m.linhas)].some((l) => l.valor === null);
 
-  // Armadura: a base vem do comentário do próprio estúdio ("Base Armor = offset + gradient *
-  // item level"); a repartição por tipo é hipótese bem apoiada, e por isso vem rotulada.
   const armadura = armaduraDe(entry.itemId, nivel);
   const dano = danoDe(entry.itemId, nivel);
   const num = (v) => v.toLocaleString(localeAtual(), { maximumFractionDigits: 1 });

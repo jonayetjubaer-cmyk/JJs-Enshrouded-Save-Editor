@@ -13,9 +13,9 @@ Os itens agora mostram **o que de fato fazem**: as linhas de atributo e as melho
 lidas dos recursos do próprio jogo e dispostas como o jogo dispõe.
 
 - **Armadura** é calculada e mostrada por peça. A fórmula vem de um comentário que o próprio
-  estúdio compilou no jogo (`Base Armor = offset + ( gradient * item level )`), e foi conferida
-  contra ele: uma bota de nível 255 com distribuição 0,06 dá `(23 + 15 × 255) × 0,06 = 230,88`, e
-  o jogo escreve 231. **Não há corte no nível 55** nesse cálculo.
+  estúdio compilou no jogo (`Base Armor = offset + ( gradient * item level )`), com as duas
+  constantes saindo da mesma tabela, e o resultado foi conferido contra o jogo numa peça vestida:
+  o valor calculado e o da tela batem.
 - **Dano de arma** sai de `seed × dmgMod × speedMod × (1 + 0,15 × nível)`, e com ele as melhorias
   que são uma fração dele — fração que o jogo escreve na tela ("10% de dano base"). Conferido num
   par de adagas de nível 50: o jogo mostra +5.5, aqui mostra +5.5.

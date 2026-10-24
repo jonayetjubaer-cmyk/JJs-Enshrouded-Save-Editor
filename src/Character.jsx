@@ -1,5 +1,3 @@
-// Tela "Personagem": boneco de equipamento (armadura à esquerda, acessórios à direita, ferramentas
-// embaixo) em volta de um medalhão com nível e XP; o painel da direita edita a peça selecionada.
 import React, { useState } from 'react';
 import { skills, items, itemName, ATRIBUTOS, atributosDaArvore } from './gamedata.js';
 import { tex, ttex } from './ui.js';
@@ -7,12 +5,8 @@ import ItemEditor, { FancyPanel } from './ItemEditor.jsx';
 import { SlotView, Stepper, Separator } from './components.jsx';
 import { t } from './i18n.js';
 
-// índice do espaço de equipamento no save -> textura do espaço vazio, nome e posição
-//
-// A lista de equipamento do save é densa e tem mais espaços que o boneco mostrava: no personagem
-// medido são 16 (aparência, armadura, 2 anéis, protetor, gancho, planador e mochila). O índice
-// aqui é a posição do bit na máscara, por isso a ordem do vetor não pode mudar — o que muda é
-// onde cada um aparece na tela.
+// O índice é a posição do bit na máscara, por isso a ordem do vetor não pode mudar — o que muda
+// é onde cada um aparece na tela.
 //
 // Os cinco PRIMEIROS espaços são os de aparência e os cinco seguintes a armadura de verdade.
 // Medido num personagem com as cinco peças vestidas: elas caem nos bits 5 a 9, e a partir do 10

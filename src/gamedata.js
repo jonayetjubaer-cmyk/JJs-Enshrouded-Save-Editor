@@ -44,15 +44,11 @@ const casa = (texto, lista) => {
   return null;
 };
 
-/** Normaliza para uma das seis chaves de atributo, ou null. */
 const atributoDe = (palavra) => ATRIBUTOS.find((a) => a.toLowerCase() === (palavra || '').toLowerCase()) ?? null;
 
 /**
- * Atributos que vêm da árvore, por nó comprado.
- *
- * Devolve `{ daArvore, porChama }`: o primeiro é o que dá para somar, o segundo lista quantos nós
- * de cada atributo dependem do nível da Chama — que o editor não conhece. O total que o jogo
- * mostra também inclui o equipamento, que não é contado aqui.
+ * `porChama` conta os nós que dependem do nível da Chama, que o editor não conhece. O total do
+ * jogo inclui ainda os bônus do equipamento, que também não entram aqui.
  */
 export function atributosDaArvore(doSave) {
   const daArvore = Object.fromEntries(ATRIBUTOS.map((a) => [a, 0]));

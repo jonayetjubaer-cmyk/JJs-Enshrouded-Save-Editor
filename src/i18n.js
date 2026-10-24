@@ -1,18 +1,6 @@
-// Tradução da interface.
-//
-// A chave é o próprio texto em português. Isso tem duas consequências boas: o português não precisa
-// de arquivo de tradução, e um texto sem tradução aparece em português em vez de aparecer como
-// "menu.botao.salvar" na tela. A consequência ruim é que mudar o texto em português quebra a chave —
-// quando isso acontecer, atualize a chave nos arquivos de idioma.
-//
-// PARA CONTRIBUIR COM UM IDIOMA
-//
-// 1. copie `src/i18n/en.json` para `src/i18n/<código>.json` (ex.: `es.json`, `de.json`)
-// 2. traduza os valores, deixando as chaves em português intactas
-// 3. mantenha os marcadores `{assim}` no lugar: eles são substituídos por números e nomes
-// 4. registre o idioma em IDIOMAS, abaixo
-//
-// Chave que você não traduzir pode ficar de fora do arquivo; ela cai no português.
+// A chave de tradução é o próprio texto em português: o que não for traduzido aparece em
+// português em vez de virar "menu.botao.salvar" na tela. O preço é que mudar o texto quebra a
+// chave. Como contribuir com um idioma está no README.
 
 import en from './i18n/en.json';
 
@@ -64,10 +52,7 @@ export function assinarIdioma(f) {
   return () => ouvintes.delete(f);
 }
 
-/**
- * Traduz um texto. `vars` substitui os marcadores: t('nível {n}', { n: 5 }).
- * Sem tradução para a chave, devolve o próprio texto em português.
- */
+/** t('nível {n}', { n: 5 }). Sem tradução, devolve a própria chave. */
 export function t(texto, vars) {
   const dic = IDIOMAS.find((i) => i.codigo === atual)?.dicionario;
   let s = (dic && dic[texto]) || texto;
@@ -77,6 +62,5 @@ export function t(texto, vars) {
   return s;
 }
 
-/** Data e hora no idioma escolhido. */
 export const dataHora = (ms) => new Date(ms).toLocaleString(localeAtual());
 export const hora = (ms) => new Date(ms).toLocaleTimeString(localeAtual());
