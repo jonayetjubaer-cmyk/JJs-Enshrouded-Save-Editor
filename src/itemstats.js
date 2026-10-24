@@ -132,6 +132,10 @@ export function melhoriasDe(itemId, nivel, upgrades = 0) {
     }
 
     return {
+      // a posição no vetor do jogo; as vazias são descartadas no fim, então quem precisa contar
+      // melhorias (a raridade limita quantas o item aceita) tem de usar isto, não o índice da
+      // lista devolvida
+      pos: i,
       nivel: nivelLinha,
       aplicada: i < upgrades,
       linhas: (m.v || []).map((l) => linha(l, nivel)),

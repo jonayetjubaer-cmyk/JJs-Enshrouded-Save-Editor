@@ -1,7 +1,7 @@
 // Tela "Personagem": boneco de equipamento (armadura à esquerda, acessórios à direita, ferramentas
 // embaixo) em volta de um medalhão com nível e XP; o painel da direita edita a peça selecionada.
 import React, { useState } from 'react';
-import { skills, items, itemName } from './gamedata.js';
+import { skills, items, itemName, ATRIBUTOS, atributosDaArvore } from './gamedata.js';
 import { tex, ttex } from './ui.js';
 import ItemEditor, { FancyPanel } from './ItemEditor.jsx';
 import { SlotView, Stepper, Separator } from './components.jsx';
@@ -19,16 +19,16 @@ import { t } from './i18n.js';
 // vêm anel, anel, protetor, gancho, planador e mochila, todos conferindo com o campo `slot` do
 // próprio item. A armadura fica na coluna da esquerda porque é a que se usa.
 export const EQUIP_SLOTS = [
-  { tex: 'equipmentslot_head', name: 'Cabeça (visual)', x: 320, y: 150 },
-  { tex: 'equipmentslot_upperbody', name: 'Tronco (visual)', x: 320, y: 300 },
-  { tex: 'equipmentslot_arms', name: 'Braços (visual)', x: 320, y: 450 },
-  { tex: 'equipmentslot_legs', name: 'Pernas (visual)', x: 320, y: 600 },
-  { tex: 'equipmentslot_feet', name: 'Pés (visual)', x: 320, y: 750 },
-  { tex: 'equipmentslot_head', name: 'Cabeça', x: 170, y: 150 },
-  { tex: 'equipmentslot_upperbody', name: 'Tronco', x: 170, y: 300 },
-  { tex: 'equipmentslot_arms', name: 'Braços', x: 170, y: 450 },
-  { tex: 'equipmentslot_legs', name: 'Pernas', x: 170, y: 600 },
-  { tex: 'equipmentslot_feet', name: 'Pés', x: 170, y: 750 },
+  { tex: 'equipmentslot_head', name: 'Cabeça (visual)', x: 192, y: 150 },
+  { tex: 'equipmentslot_upperbody', name: 'Tronco (visual)', x: 192, y: 300 },
+  { tex: 'equipmentslot_arms', name: 'Braços (visual)', x: 192, y: 450 },
+  { tex: 'equipmentslot_legs', name: 'Pernas (visual)', x: 192, y: 600 },
+  { tex: 'equipmentslot_feet', name: 'Pés (visual)', x: 192, y: 750 },
+  { tex: 'equipmentslot_head', name: 'Cabeça', x: 42, y: 150 },
+  { tex: 'equipmentslot_upperbody', name: 'Tronco', x: 42, y: 300 },
+  { tex: 'equipmentslot_arms', name: 'Braços', x: 42, y: 450 },
+  { tex: 'equipmentslot_legs', name: 'Pernas', x: 42, y: 600 },
+  { tex: 'equipmentslot_feet', name: 'Pés', x: 42, y: 750 },
   { tex: 'equipmentslot_ring', name: 'Anel', x: 1110, y: 150 },
   { tex: 'equipmentslot_ring', name: 'Anel', x: 1110, y: 300 },
   { tex: 'equipmentslot_shield', name: 'Protetor', x: 1110, y: 450 },
@@ -37,8 +37,6 @@ export const EQUIP_SLOTS = [
   { tex: 'equipmentslot_backpack', name: 'Mochila', x: 1110, y: 900 },
 ];
 const SLOT = 118;
-// também são as chaves dos nós de atributo da árvore (campo `pt` de skills.json)
-const ATTRS = ['Constituição', 'Espírito', 'Resistência', 'Força', 'Destreza', 'Inteligência'];
 
 export default function Character({ model, setModel }) {
   const [sel, setSel] = useState(0);
@@ -62,11 +60,15 @@ export default function Character({ model, setModel }) {
     setSel(0);
   };
 
-  const attrs = Object.fromEntries(ATTRS.map((a) => [a, 2]));
-  for (const s of model.skills) {
-    const n = skills.nodes[s.id];
-    if (n?.type === 'Attribute' && s.level > 0 && attrs[n.pt] !== undefined) attrs[n.pt] += 1;
-  }
+  // Base medida contra o jogo: com 10 por atributo, quatro dos seis fecham exatamente num
+  // personagem de nível 47 (Constituição 2+10=12, Espírito 3+10=13, Força 0+10=10,
+  // Inteligência 3+10=13). Resistência e Destreza ficam acima disso, e o que falta vem dos nós
+  // que dependem do nível da Chama e do equipamento — nenhum dos dois está no save do
+  // personagem, então o editor não soma e avisa.
+  const BASE_ATRIBUTO = 10;
+  const { daArvore, porChama } = atributosDaArvore(model.skills);
+  const attrs = Object.fromEntries(ATRIBUTOS.map((a) => [a, BASE_ATRIBUTO + daArvore[a]]));
+  const dependeDaChama = Object.values(porChama).some((n) => n > 0);
 
   return (
     <div className="screen character">
@@ -92,9 +94,10 @@ export default function Character({ model, setModel }) {
         </div>
         <Separator />
         <div className="attr-grid">
-          {ATTRS.map((a) => <div key={a}><span className="caps small">{t(a)}</span><b>{attrs[a]}</b></div>)}
+          {ATRIBUTOS.map((a) => <div key={a}><span className="caps small">{t(a)}</span><b>{attrs[a]}</b></div>)}
         </div>
         <div className="hint">{t('Atributos calculados pelos nós da árvore (editáveis na aba Habilidades).')}</div>
+        {dependeDaChama && <div className="hint warn">{t('O jogo soma ainda os nós que dependem do nível da Chama e os bônus do equipamento; nenhum dos dois está no save do personagem.')}</div>}
       </div>
 
       {EQUIP_SLOTS.map((s, i) => (

@@ -255,5 +255,6 @@
   "Tronco (visual)": "Chest (vanity)",
   "Braços (visual)": "Arms (vanity)",
   "Pernas (visual)": "Legs (vanity)",
-  "Pés (visual)": "Feet (vanity)"
+  "Pés (visual)": "Feet (vanity)",
+  "O jogo soma ainda os nós que dependem do nível da Chama e os bônus do equipamento; nenhum dos dois está no save do personagem.": "The game also adds the nodes that scale with your Flame level and the bonuses from your gear; neither is stored in the character save."
 }

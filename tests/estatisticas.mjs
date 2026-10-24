@@ -176,6 +176,30 @@ for (const [campo, velocidade, decimal] of [
   conferir(vigor?.valor === '+9', `${campo}: anel em 255 continua ${vigor?.valor} Vigor, como no jogo`);
 }
 
+// ------------------------------------------- quantas melhorias o item mostra é a raridade
+//
+// O vetor do jogo tem sempre cinco posições, mas a raridade diz quantas o item aceita (nível
+// máximo = nível base + raridade). Mostrar as cinco em todo item fazia um Comum anunciar
+// melhorias de Lendário, que nunca iam acontecer. Quem corta usa `pos`, a posição no vetor
+// original — a lista devolvida descarta as posições vazias, então o índice dela não serve.
+{
+  const mod = await carregar('pt');
+  const CALCAS = 9501187; // Armor_T7_Ranger_Archer_DPS_Legs
+  const porRaridade = (r, upgrades = 0) => mod.melhoriasDe(CALCAS, 56 + upgrades, upgrades).filter((x) => x.pos < r);
+
+  for (const [raridade, quantas] of [[1, 1], [3, 3], [5, 5]]) {
+    conferir(porRaridade(raridade).length === quantas,
+      `raridade ${raridade}: ${porRaridade(raridade).length} melhorias`);
+  }
+  // as posições têm de ser as do vetor original, em ordem e sem buraco neste item
+  conferir(porRaridade(5).every((x, i) => x.pos === i), 'as posições seguem o vetor do jogo');
+
+  // com 3 aplicadas, as três primeiras vêm marcadas e as demais não
+  const r3 = porRaridade(5, 3);
+  conferir(r3.filter((x) => x.aplicada).length === 3 && r3.slice(0, 3).every((x) => x.aplicada),
+    `com 3 melhorias, ${r3.filter((x) => x.aplicada).length} marcadas e as três primeiras`);
+}
+
 // item sem nada a mostrar não inventa seção
 conferir(m.temEstatisticas(999999999) === false, 'id desconhecido não tem estatísticas');
 conferir(m.atributosDe(999999999, 1).length === 0, 'id desconhecido não produz linhas');

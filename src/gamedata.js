@@ -20,6 +20,60 @@ export const nomeDe = (o, reserva) => {
 export const itemName = (id) => nomeDe(items[id], items[id]?.debug || `#${id}`);
 export const skillName = (id) => nomeDe(skills.nodes[id], `#${id}`);
 
+export const ATRIBUTOS = ['Constituição', 'Espírito', 'Resistência', 'Força', 'Destreza', 'Inteligência'];
+
+// O que cada nó de atributo dá está escrito na descrição dele, não no nome: há 65 nós de tipo
+// `Attribute` e seis deles têm nome próprio (Barbárie, Pele Grossa, Passo Gracioso…). Contar pelo
+// nome perdia esses seis.
+//
+// Duas redações aparecem para o caso simples — "Aumenta o atributo X em N" e "Aumenta o seu X
+// atributo por N" — e uma terceira para os que dependem da Chama: "Ganhe um ponto de X a cada
+// dois níveis da Chama". Esses últimos o editor não sabe calcular, porque o nível da Chama não
+// está no save do personagem; ficam contados à parte.
+const DIRETO = [
+  /aumenta o atributo ([^\s]+) em (\d+)/i,
+  /aumenta o seu ([^\s]+) atributo por (\d+)/i,
+];
+const POR_CHAMA = /(?:ponto|um) de ([^\s]+?)(?:\s|,|\.)[^.]*n[íi]ve(?:is|l) da Chama/i;
+
+const casa = (texto, lista) => {
+  for (const re of lista) {
+    const m = texto.match(re);
+    if (m) return m;
+  }
+  return null;
+};
+
+/** Normaliza para uma das seis chaves de atributo, ou null. */
+const atributoDe = (palavra) => ATRIBUTOS.find((a) => a.toLowerCase() === (palavra || '').toLowerCase()) ?? null;
+
+/**
+ * Atributos que vêm da árvore, por nó comprado.
+ *
+ * Devolve `{ daArvore, porChama }`: o primeiro é o que dá para somar, o segundo lista quantos nós
+ * de cada atributo dependem do nível da Chama — que o editor não conhece. O total que o jogo
+ * mostra também inclui o equipamento, que não é contado aqui.
+ */
+export function atributosDaArvore(doSave) {
+  const daArvore = Object.fromEntries(ATRIBUTOS.map((a) => [a, 0]));
+  const porChama = Object.fromEntries(ATRIBUTOS.map((a) => [a, 0]));
+  for (const s of doSave || []) {
+    const n = skills.nodes[s.id];
+    if (!n || n.type !== 'Attribute' || !(s.level > 0)) continue;
+    const texto = (n.desc || '').replace(/\n/g, ' ');
+    const direto = casa(texto, DIRETO);
+    if (direto) {
+      const a = atributoDe(direto[1]);
+      if (a) daArvore[a] += Number(direto[2]) * s.level;
+      continue;
+    }
+    const chama = texto.match(POR_CHAMA);
+    const a = chama && atributoDe(chama[1]);
+    if (a) porChama[a] += 1;
+  }
+  return { daArvore, porChama };
+}
+
 // os valores são chaves de tradução: quem mostra passa por t()
 export const CATEGORY_PT = {
   Weapons: 'Arma', Equipment: 'Equipamento', Materials: 'Material', Consumables: 'Consumível',

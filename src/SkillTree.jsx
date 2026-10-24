@@ -1,7 +1,7 @@
 // Tela "Habilidades": canvas de 8000x8000 com centro em (4000,4000), como no SkillTreeResource.
 // Texturas, larguras nominais, ligações, anel central e rótulos de classe vêm do FbUiBundle.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { skills, nomeDe } from './gamedata.js';
+import { skills, nomeDe, ATRIBUTOS, atributosDaArvore } from './gamedata.js';
 import { ui, tex, ttex, rgba } from './ui.js';
 import { ASSET_BASE } from './platform.js';
 import { totalKey as totalKeyOf, checkTree } from './treecheck.js';
@@ -11,8 +11,6 @@ const ST = ui.skilltree;
 const CENTER = { x: 4000, y: 4000 };
 const TYPE_CFG = { Root: 'root', Attribute: 'simpleAttribute', PassiveSkill: 'passiveSkill', ActiveSkill: 'activeSkill' };
 const CLASS_GLOW = { Ranger: 'ranger', Warrior: 'warrior', Mage: 'mage', Neutral: 'neutral' };
-// também são as chaves dos nós de atributo da árvore (campo `pt` de skills.json)
-const ATTRS = ['Constituição', 'Espírito', 'Resistência', 'Força', 'Destreza', 'Inteligência'];
 
 const nodes = Object.entries(skills.nodes).map(([id, n]) => ({ id: Number(id), ...n }));
 const byId = new Map(nodes.map((n) => [n.id, n]));
@@ -39,11 +37,15 @@ export default function SkillTree({ model, setModel, stage }) {
     try { localStorage.setItem(totalKey, String(v)); } catch {}
     setTotal(v); setEditTotal(false);
   };
-  const attrs = Object.fromEntries(ATTRS.map((a) => [a, 2]));
-  for (const s of model.skills) {
-    const n = byId.get(s.id);
-    if (n?.type === 'Attribute' && s.level > 0 && attrs[n.pt] !== undefined) attrs[n.pt] += 1;
-  }
+  // Base medida contra o jogo: com 10 por atributo, quatro dos seis fecham exatamente num
+  // personagem de nível 47 (Constituição 2+10=12, Espírito 3+10=13, Força 0+10=10,
+  // Inteligência 3+10=13). Resistência e Destreza ficam acima disso, e o que falta vem dos nós
+  // que dependem do nível da Chama e do equipamento — nenhum dos dois está no save do
+  // personagem, então o editor não soma e avisa.
+  const BASE_ATRIBUTO = 10;
+  const { daArvore, porChama } = atributosDaArvore(model.skills);
+  const attrs = Object.fromEntries(ATRIBUTOS.map((a) => [a, BASE_ATRIBUTO + daArvore[a]]));
+  const dependeDaChama = Object.values(porChama).some((n) => n > 0);
 
   const setLevel = (id, lv) => {
     const n = byId.get(id); const max = n.maxLevel || 1;
@@ -162,7 +164,7 @@ export default function SkillTree({ model, setModel, stage }) {
       </div>
       {(() => { const { problems } = checkTree(model); return problems.length ? <div className="st-warn">⚠ {problems.join(' · ')}</div> : null; })()}
       <div className="st-attrs">
-        {ATTRS.map((a) => (
+        {ATRIBUTOS.map((a) => (
           <div key={a}><div className="caps small">{t(a)}</div><div className="big">{attrs[a]}</div></div>
         ))}
       </div>
