@@ -43,6 +43,10 @@ joias, o aviso da mochila, o relatório de recusa e as mensagens de validação 
 português com a interface em inglês. A busca sempre funcionou, porque compara contra os dois
 idiomas — que foi exatamente o que o relato dizia.
 
+Os **conhecimentos** também seguem o idioma: 6784 dos 8335 são um item ou a receita de um item, e
+o nome deles agora sai da tabela de itens em vez de vir gravado em português. O resto são ações do
+jogo sem item por trás, e para essas o jogo traz um nome só.
+
 A **descrição** dos nós de habilidade também passou a ser traduzida — o jogo traz o texto dele em
 15 idiomas e o dado só carregava o português.
 

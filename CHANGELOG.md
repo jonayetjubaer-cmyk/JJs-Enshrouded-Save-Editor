@@ -42,6 +42,10 @@ the backpack warning, the rejection report and the tree validation messages were
 Portuguese with the interface in English. Search always worked, because it matches both languages
 — which is exactly what the report said.
 
+**Knowledge entries** follow the language too: 6784 of the 8335 are an item or an item's recipe,
+and their name now comes from the item table instead of being baked in Portuguese. The rest are
+game actions with no item behind them, and the game only ships one name for those.
+
 Skill node **descriptions** are translated too — the game ships its text in 15 languages and the
 data only carried the Portuguese one.
 

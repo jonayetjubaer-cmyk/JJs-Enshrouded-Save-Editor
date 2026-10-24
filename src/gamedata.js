@@ -23,6 +23,14 @@ export const itemName = (id) => nomeDe(items[id], items[id]?.debug || `#${id}`);
 export const descricaoDe = (no) => (campoDeNome() === 'pt' ? no?.desc : no?.descEn) || no?.desc || '';
 export const skillName = (id) => nomeDe(skills.nodes[id], `#${id}`);
 
+// O conhecimento quase sempre é um item ou a receita de um item, e aí o nome sai do `items.json`
+// no idioma escolhido. Só as entradas sem item por trás levam o nome gravado, que existe num
+// idioma só.
+export const nomeConhecimento = (info, id) => {
+  if (info?.i !== undefined) return itemName(info.i);
+  return info?.n ?? `#${id}`;
+};
+
 export const ATRIBUTOS = ['Constituição', 'Espírito', 'Resistência', 'Força', 'Destreza', 'Inteligência'];
 
 // O que cada nó de atributo dá está escrito na descrição dele, não no nome: há 65 nós de tipo

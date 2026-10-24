@@ -82,6 +82,19 @@ for (const [campo, mod, trecho] of [['pt', pt, 'Arpéu'], ['en', en, 'Grappling 
   conferir(mod.descricaoDe(comArpeu).includes(trecho), `${campo}: descrição do nó em ${campo}`);
 }
 
+// conhecimento: a maioria é item ou receita de item, e aí o nome segue o idioma
+const conhecimento = JSON.parse(fs.readFileSync(path.join(RAIZ, 'data', 'conhecimento.json'), 'utf8'));
+const comItem = Object.keys(conhecimento).filter((k) => conhecimento[k].i !== undefined);
+conferir(comItem.length > 6000, `${comItem.length} conhecimentos resolvem o nome por item`);
+const umId = comItem.find((k) => items[conhecimento[k].i]?.pt !== items[conhecimento[k].i]?.en);
+conferir(pt.nomeConhecimento(conhecimento[umId], umId) === items[conhecimento[umId].i].pt
+  && en.nomeConhecimento(conhecimento[umId], umId) === items[conhecimento[umId].i].en,
+  `conhecimento ${umId}: "${pt.nomeConhecimento(conhecimento[umId], umId)}" / "${en.nomeConhecimento(conhecimento[umId], umId)}"`);
+// os que não têm item por trás continuam no idioma único em que o jogo os traz
+const semItem = Object.keys(conhecimento).filter((k) => conhecimento[k].n !== undefined);
+conferir(semItem.every((k) => pt.nomeConhecimento(conhecimento[k], k) === conhecimento[k].n),
+  `${semItem.length} sem item por trás caem no nome gravado`);
+
 // ------------------------------------------------------------------ guarda contra a reincidência
 //
 // Este bug já voltou duas vezes, sempre num arquivo novo: alguém escreve `item.pt` para pôr um nome

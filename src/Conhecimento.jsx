@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { GameButton } from './components.jsx';
 import { estadoTexto } from '../shared/knowledge.mjs';
 import mapa from '../data/conhecimento.json';
-import { t } from './i18n.js';
+import { nomeConhecimento } from './gamedata.js';
+import { t , localeAtual } from './i18n.js';
 
 // Conhecimento do personagem: itens já vistos/pegos e receitas liberadas.
 // Tirar daqui um material de nível alto também fecha as receitas que dependem dele.
@@ -21,15 +22,15 @@ export default function Conhecimento({ model, setModel }) {
     const n = Number(corte);
     const q = busca.trim().toLowerCase();
     return (model.knowledge ?? [])
-      .map((k) => ({ ...k, info: mapa[k.id] }))
+      .map((k) => ({ ...k, info: mapa[k.id], nome: mapa[k.id] ? nomeConhecimento(mapa[k.id], k.id) : null }))
       .filter((k) => {
         const t = k.info?.t ?? 'o';
         if (!tipo.includes(t)) return false;
         if (corte !== '' && !((k.info?.l ?? 0) > n)) return false;
-        if (q && !((k.info?.n ?? '').toLowerCase().includes(q) || String(k.id).includes(q))) return false;
+        if (q && !((k.nome ?? '').toLowerCase().includes(q) || String(k.id).includes(q))) return false;
         return true;
       })
-      .sort((a, b) => (b.info?.l ?? 0) - (a.info?.l ?? 0) || (a.info?.n ?? '').localeCompare(b.info?.n ?? ''));
+      .sort((a, b) => (b.info?.l ?? 0) - (a.info?.l ?? 0) || (a.nome ?? '').localeCompare(b.nome ?? '', localeAtual()));
   }, [model.knowledge, busca, corte, tipo]);
 
   const alterna = (id) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -66,7 +67,7 @@ export default function Conhecimento({ model, setModel }) {
           <button key={k.id} className={`know-row ${sel.has(k.id) ? 'sel' : ''}`} onClick={() => alterna(k.id)}>
             <span className="know-check">{sel.has(k.id) ? '✕' : ''}</span>
             <span className={`know-kind ${k.info?.t ?? 'o'}`}>{t(TIPO_PT[k.info?.t ?? 'o'])}</span>
-            <span className="know-nome">{k.info?.n ?? t('id {id}', { id: k.id })}</span>
+            <span className="know-nome">{k.nome ?? t('id {id}', { id: k.id })}</span>
             <span className="know-nivel">{k.info?.l ? t('nv {n}', { n: k.info.l }) : ''}</span>
             <span className="know-estado">{estado(k.value, k.info?.t)}</span>
           </button>
