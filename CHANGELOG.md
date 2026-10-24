@@ -33,8 +33,6 @@ level, read from the game's own resources and laid out the way the game lays the
 - **The attribute totals on the Character screen are lower than the game's.** They count what the
   skill tree gives. The game also adds the nodes that scale with your Flame level and the bonuses
   from your gear, and neither is stored in the character save. The screen says so.
-- **Skill node descriptions stay in Portuguese** in any language: `data/skills.json` only carries
-  the Portuguese description. Node *names* are translated.
 
 ### Language ([#1](../../issues/1))
 
@@ -43,6 +41,9 @@ and not in others: the skill tree tooltip, the item catalogue and its sort order
 the backpack warning, the rejection report and the tree validation messages were all stuck in
 Portuguese with the interface in English. Search always worked, because it matches both languages
 — which is exactly what the report said.
+
+Skill node **descriptions** are translated too — the game ships its text in 15 languages and the
+data only carried the Portuguese one.
 
 A test now sweeps the source and fails on any line that reads the Portuguese field directly.
 

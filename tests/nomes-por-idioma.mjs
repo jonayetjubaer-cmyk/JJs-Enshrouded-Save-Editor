@@ -74,6 +74,14 @@ const nosFaltando = Object.keys(skills.nodes).filter((k) => {
 });
 conferir(nosFaltando.length === 0, `nós de habilidade com português e sem inglês: ${nosFaltando.length}`);
 
+// a descrição do nó também acompanha o idioma, e vem num campo diferente do nome
+const semDescEn = Object.values(skills.nodes).filter((n) => (n.desc || '').trim() && !(n.descEn || '').trim());
+conferir(semDescEn.length === 0, `nós com descrição em português e sem inglês: ${semDescEn.length}`);
+const comArpeu = Object.values(skills.nodes).find((n) => (n.desc || '').includes('Arpéu'));
+for (const [campo, mod, trecho] of [['pt', pt, 'Arpéu'], ['en', en, 'Grappling Hook']]) {
+  conferir(mod.descricaoDe(comArpeu).includes(trecho), `${campo}: descrição do nó em ${campo}`);
+}
+
 // ------------------------------------------------------------------ guarda contra a reincidência
 //
 // Este bug já voltou duas vezes, sempre num arquivo novo: alguém escreve `item.pt` para pôr um nome

@@ -18,6 +18,9 @@ export const nomeDe = (o, reserva) => {
 };
 
 export const itemName = (id) => nomeDe(items[id], items[id]?.debug || `#${id}`);
+
+// A descrição do nó é guardada em `desc` e `descEn`, e não em `pt`/`en` como o nome.
+export const descricaoDe = (no) => (campoDeNome() === 'pt' ? no?.desc : no?.descEn) || no?.desc || '';
 export const skillName = (id) => nomeDe(skills.nodes[id], `#${id}`);
 
 export const ATRIBUTOS = ['Constituição', 'Espírito', 'Resistência', 'Força', 'Destreza', 'Inteligência'];
@@ -56,6 +59,7 @@ export function atributosDaArvore(doSave) {
   for (const s of doSave || []) {
     const n = skills.nodes[s.id];
     if (!n || n.type !== 'Attribute' || !(s.level > 0)) continue;
+    // em português de propósito: as expressões abaixo são as do texto português
     const texto = (n.desc || '').replace(/\n/g, ' ');
     const direto = casa(texto, DIRETO);
     if (direto) {

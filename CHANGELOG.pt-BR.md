@@ -34,8 +34,6 @@ lidas dos recursos do próprio jogo e dispostas como o jogo dispõe.
 - **Os atributos na tela Personagem ficam abaixo dos do jogo.** Eles contam o que a árvore dá. O
   jogo soma ainda os nós que dependem do nível da Chama e os bônus do equipamento, e nenhum dos
   dois está no save do personagem. A tela avisa.
-- **A descrição dos nós de habilidade continua em português** em qualquer idioma:
-  `data/skills.json` só traz a descrição em português. O *nome* do nó é traduzido.
 
 ### Idioma ([#1](../../issues/1))
 
@@ -44,6 +42,9 @@ em outros não: a dica da árvore de habilidades, o catálogo de itens e a ordem
 joias, o aviso da mochila, o relatório de recusa e as mensagens de validação da árvore ficavam em
 português com a interface em inglês. A busca sempre funcionou, porque compara contra os dois
 idiomas — que foi exatamente o que o relato dizia.
+
+A **descrição** dos nós de habilidade também passou a ser traduzida — o jogo traz o texto dele em
+15 idiomas e o dado só carregava o português.
 
 Agora um teste varre o código-fonte e reprova qualquer linha que leia o campo português direto.
 
