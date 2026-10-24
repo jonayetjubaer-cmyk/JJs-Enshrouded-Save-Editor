@@ -1,0 +1,74 @@
+# Compila o editor e, quando a tag começa com v, publica um release com o executável anexado.
+#
+# Os recursos da interface já vêm preparados em `build-assets/`, versionados no repositório, e o
+# `src-tauri/src/main.rs` os embute no executável em tempo de compilação (`include_dir!`). Por isso
+# o build não precisa de Python nem de nenhum passo de preparação: é Node e Rust.
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Dependências do Node
+        run: npm ci
+
+      - name: Teste de ida e volta do leitor de save
+        run: npm test
+
+      - name: Compilar
+        run: npx tauri build --no-bundle
+
+      - name: Conferir que o executável saiu
+        shell: pwsh
+        run: |
+          $exe = "src-tauri/target/release/enshrouded-save-editor.exe"
+          if (-not (Test-Path $exe)) { throw "o executavel nao foi gerado" }
+          $tamanho = (Get-Item $exe).Length
+          Write-Host "executavel: $tamanho bytes"
+          # ele embute os recursos da interface, entao um exe pequeno significa build sem assets
+          if ($tamanho -lt 5000000) { throw "executavel pequeno demais ($tamanho bytes); recursos nao foram embutidos" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: enshrouded-save-editor
+          path: src-tauri/target/release/enshrouded-save-editor.exe
+          if-no-files-found: error
+
+      - name: Publicar release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src-tauri/target/release/enshrouded-save-editor.exe
+          generate_release_notes: true
+          body: |
+            Baixe o `enshrouded-save-editor.exe` e rode. Não precisa instalar nada: os recursos da
+            interface vão dentro do executável.
+
+            Para editar as cópias de personagem de um servidor dedicado, é preciso o
+            [Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian)
+            rodando nele. Sem o guardião, o editor trabalha nos saves locais do seu jogo.
+
+            Este arquivo foi compilado pelo GitHub Actions a partir deste repositório — o log do
+            build é público e pode ser conferido na aba Actions.

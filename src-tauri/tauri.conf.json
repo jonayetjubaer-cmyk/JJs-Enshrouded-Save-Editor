@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Enshrouded Save Editor",
+  "version": "0.1.0",
+  "identifier": "local.nicolas.enshrouded-save-editor",
+  "build": {
+    "frontendDist": "../dist",
+    "beforeBuildCommand": "npx vite build"
+  },
+  "app": {
+    "windows": [
+      { "title": "Enshrouded Save Editor", "width": 1600, "height": 900, "minWidth": 1024, "minHeight": 576, "dragDropEnabled": false }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": { "active": false, "icon": ["icons/icon.ico"] }
+}
