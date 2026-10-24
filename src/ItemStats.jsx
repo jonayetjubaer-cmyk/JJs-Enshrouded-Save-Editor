@@ -18,7 +18,9 @@ export default function ItemStats({ entry }) {
   if (!temEstatisticas(entry.itemId)) return null;
   const nivel = entry.level;
   const atributos = atributosDe(entry.itemId, nivel);
-  const melhorias = melhoriasDe(entry.itemId, nivel, entry.upgrades ?? 0);
+  // só as melhorias que o item já tem. As posições seguintes nem sempre são alcançáveis — a
+  // raridade limita quantas o item aceita —, então mostrá-las prometia o que não ia acontecer.
+  const melhorias = melhoriasDe(entry.itemId, nivel, entry.upgrades ?? 0).filter((m) => m.aplicada);
   if (!atributos.length && !melhorias.length) return null;
 
   // uma linha cujo valor depende do nível e cuja conta ainda não conhecemos aparece sem número,
@@ -44,8 +46,8 @@ export default function ItemStats({ entry }) {
         <>
           <div className="st-titulo caps small">{t('Melhorias')}</div>
           {melhorias.map((m) => (
-            <div key={m.nivel} className={`st-melhoria${m.aplicada ? ' aplicada' : ''}`}>
-              <span className="st-nivel caps">{m.aplicada ? '✓ ' : ''}{t('nível {n}', { n: m.nivel })}</span>
+            <div key={m.nivel} className="st-melhoria aplicada">
+              <span className="st-nivel caps">{t('nível {n}', { n: m.nivel })}</span>
               {/* a armadura que este nível acrescenta à peça, como a coluna do jogo */}
               <span className="st-ganho">{m.ganho ? `+${m.ganho.fisica}/+${m.ganho.magica}` : ''}</span>
               <span className="st-efeitos">

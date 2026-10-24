@@ -8,20 +8,27 @@ import { SlotView, Stepper, Separator } from './components.jsx';
 import { t } from './i18n.js';
 
 // índice do espaço de equipamento no save -> textura do espaço vazio, nome e posição
+//
 // A lista de equipamento do save é densa e tem mais espaços que o boneco mostrava: no personagem
-// medido são 16 (armadura, aparência, 2 anéis, protetor, gancho, planador e mochila). O rótulo vem
-// da posição na lista; quando a peça não corresponde ao rótulo esperado, mostramos só o nome dela.
+// medido são 16 (aparência, armadura, 2 anéis, protetor, gancho, planador e mochila). O índice
+// aqui é a posição do bit na máscara, por isso a ordem do vetor não pode mudar — o que muda é
+// onde cada um aparece na tela.
+//
+// Os cinco PRIMEIROS espaços são os de aparência e os cinco seguintes a armadura de verdade.
+// Medido num personagem com as cinco peças vestidas: elas caem nos bits 5 a 9, e a partir do 10
+// vêm anel, anel, protetor, gancho, planador e mochila, todos conferindo com o campo `slot` do
+// próprio item. A armadura fica na coluna da esquerda porque é a que se usa.
 export const EQUIP_SLOTS = [
+  { tex: 'equipmentslot_head', name: 'Cabeça (visual)', x: 320, y: 150 },
+  { tex: 'equipmentslot_upperbody', name: 'Tronco (visual)', x: 320, y: 300 },
+  { tex: 'equipmentslot_arms', name: 'Braços (visual)', x: 320, y: 450 },
+  { tex: 'equipmentslot_legs', name: 'Pernas (visual)', x: 320, y: 600 },
+  { tex: 'equipmentslot_feet', name: 'Pés (visual)', x: 320, y: 750 },
   { tex: 'equipmentslot_head', name: 'Cabeça', x: 170, y: 150 },
   { tex: 'equipmentslot_upperbody', name: 'Tronco', x: 170, y: 300 },
   { tex: 'equipmentslot_arms', name: 'Braços', x: 170, y: 450 },
   { tex: 'equipmentslot_legs', name: 'Pernas', x: 170, y: 600 },
   { tex: 'equipmentslot_feet', name: 'Pés', x: 170, y: 750 },
-  { tex: 'equipmentslot_head', name: 'Cabeça (2)', x: 320, y: 150 },
-  { tex: 'equipmentslot_upperbody', name: 'Tronco (2)', x: 320, y: 300 },
-  { tex: 'equipmentslot_arms', name: 'Braços (2)', x: 320, y: 450 },
-  { tex: 'equipmentslot_legs', name: 'Pernas (2)', x: 320, y: 600 },
-  { tex: 'equipmentslot_feet', name: 'Pés (2)', x: 320, y: 750 },
   { tex: 'equipmentslot_ring', name: 'Anel', x: 1110, y: 150 },
   { tex: 'equipmentslot_ring', name: 'Anel', x: 1110, y: 300 },
   { tex: 'equipmentslot_shield', name: 'Protetor', x: 1110, y: 450 },

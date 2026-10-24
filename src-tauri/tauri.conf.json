@@ -9,9 +9,23 @@
   },
   "app": {
     "windows": [
-      { "title": "Enshrouded Save Editor", "width": 1600, "height": 900, "minWidth": 1024, "minHeight": 576, "dragDropEnabled": false }
+      {
+        "title": "Enshrouded Save Editor",
+        "width": 1920,
+        "height": 1080,
+        "minWidth": 1280,
+        "minHeight": 720,
+        "dragDropEnabled": false
+      }
     ],
-    "security": { "csp": null }
+    "security": {
+      "csp": null
+    }
   },
-  "bundle": { "active": false, "icon": ["icons/icon.ico"] }
+  "bundle": {
+    "active": false,
+    "icon": [
+      "icons/icon.ico"
+    ]
+  }
 }
