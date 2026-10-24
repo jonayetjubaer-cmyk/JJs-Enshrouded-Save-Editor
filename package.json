@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "vite build",
-    "test": "node tests/soquete.mjs && node tests/itens-novos.mjs && node tests/nomes-por-idioma.mjs && node tests/estatisticas.mjs && node tests/ida-e-volta.mjs",
+    "test": "node tests/soquete.mjs && node tests/itens-novos.mjs && node tests/nomes-por-idioma.mjs && node tests/estatisticas.mjs && node tests/todas-as-armas.mjs && node tests/ida-e-volta.mjs",
     "dist": "tauri build --no-bundle"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 // Bloco de atributos e melhorias do item, no formato do tooltip do jogo:
 // as linhas de atributo primeiro, depois "Melhorias" com uma linha por nível de upgrade.
 import React from 'react';
-import { atributosDe, melhoriasDe, temEstatisticas, armaduraDe } from './itemstats.js';
+import { atributosDe, melhoriasDe, temEstatisticas, armaduraDe, danoDe } from './itemstats.js';
 import { skillName, skills } from './gamedata.js';
 import { t, localeAtual } from './i18n.js';
 
@@ -33,6 +33,7 @@ export default function ItemStats({ entry }) {
   // Armadura: a base vem do comentário do próprio estúdio ("Base Armor = offset + gradient *
   // item level"); a repartição por tipo é hipótese bem apoiada, e por isso vem rotulada.
   const armadura = armaduraDe(entry.itemId, nivel);
+  const dano = danoDe(entry.itemId, nivel);
   const num = (v) => v.toLocaleString(localeAtual(), { maximumFractionDigits: 1 });
 
   return (
@@ -43,6 +44,7 @@ export default function ItemStats({ entry }) {
           <Linha valor={String(armadura.magica)} nome={t('Armadura Mágica')} />
         </>
       )}
+      {dano && dano.map((d, i) => <Linha key={`d${i}`} valor={String(d.valor)} nome={d.nome} />)}
       {atributos.map((l, i) => <Linha key={i} {...l} />)}
 
       {melhorias.length > 0 && (
@@ -55,6 +57,7 @@ export default function ItemStats({ entry }) {
               <span className="st-ganho">{m.ganho ? `+${m.ganho.fisica}/+${m.ganho.magica}` : ''}</span>
               <span className="st-efeitos">
                 {m.armadura && <Linha valor={`+${m.armadura.valor}`} nome={m.armadura.nome} />}
+                {m.dano && <Linha valor={`+${m.dano.valor}`} nome={m.dano.nome} />}
                 {m.linhas.map((l, i) => <Linha key={i} {...l} />)}
                 {m.no !== null && skills.nodes[m.no] && (
                   <span className="hint">{t('aumenta o nível de {no} na árvore', { no: skillName(m.no) })}</span>

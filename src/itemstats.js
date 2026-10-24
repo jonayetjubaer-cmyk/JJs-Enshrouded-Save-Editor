@@ -11,7 +11,7 @@
 import stats from '../data/item-stats.json';
 import { campoDeNome, localeAtual } from './i18n.js';
 
-const { nomes, itens, balanceamento } = stats;
+const { nomes, itens, balanceamento, tiposDano } = stats;
 
 export const BALANCEAMENTO = balanceamento;
 
@@ -90,6 +90,36 @@ export function atributosDe(itemId, nivel) {
   return (reg?.a || []).filter((l) => l.t !== NIVEL_DO_ITEM).map((l) => linha(l, nivel));
 }
 
+/**
+ * Dano base da arma no nível em que ela está.
+ *
+ * `seed × dmgMod × speedMod × (1 + creep × nível)`, com as constantes da tabela do jogo. Medido
+ * contra o jogo nas Adagas do Orgulho, nível 50: 10 × 1,0 × 0,65 × (1 + 0,15×50) = 55,25, e a
+ * melhoria de 10% aparece lá como "+5.5 Dano de Perfuração / 10% de dano base".
+ *
+ * Ressalva conhecida: nos arcos a distribuição de dano é ZERO — o arco não tem dano próprio, ele
+ * sai da flecha. Para eles este número é só a parte que vem do arco, e o jogo mostra um pouco
+ * menos (21,5 contra 21,6 no Arco da Fênix).
+ */
+export function danoBase(itemId, nivel) {
+  const reg = itens[itemId];
+  if (!reg?.d || nivel === undefined) return null;
+  const { genericWeaponSeed: seed, powerCreepWeapon: creep } = balanceamento;
+  if (seed === undefined || creep === undefined) return null;
+  return seed * (reg.d.mod ?? 1) * (reg.d.vel ?? 1) * (1 + creep * nivel);
+}
+
+/** Dano da arma repartido pelos tipos que ela causa. As frações somam 1 nas armas de verdade. */
+export function danoDe(itemId, nivel) {
+  const reg = itens[itemId];
+  const base = danoBase(itemId, nivel);
+  if (base === null) return null;
+  const tipos = Object.entries(reg.d.dist || {})
+    .filter(([k, v]) => v > 0 && v <= 1 && tiposDano[k])
+    .map(([k, v]) => ({ nome: nomeDoTexto(tiposDano[k]), valor: Math.round(base * v) }));
+  return tipos.length ? tipos : null;
+}
+
 /** Armadura bruta de um nível, antes de repartir por tipo. */
 const baseArmadura = (nivel) => {
   const { offset, gradient } = balanceamento.armorSetup || {};
@@ -131,6 +161,22 @@ export function melhoriasDe(itemId, nivel, upgrades = 0) {
       armadura = { valor: Math.round(bruta * fr), nome: m.rn ? nomeDoTexto(m.rn) : '' };
     }
 
+    // melhoria que dá dano de um tipo: é uma fração do dano base da arma, e o jogo escreve isso
+    // na tela ("10% de dano base"). Diferente da armadura, vale no nível do ITEM: as Adagas do
+    // Orgulho mostram +5.5 nas linhas 48 e 50, o mesmo valor nas duas.
+    let dano = null;
+    if (m.rd) {
+      const base = danoBase(itemId, nivel);
+      if (base !== null) {
+        const fr = Object.values(m.rd)[0] || 0;
+        const chave = Object.keys(m.rd)[0];
+        dano = {
+          valor: Math.round(base * fr * 10) / 10,
+          nome: nomeDoTexto(m.rn ?? tiposDano[chave] ?? ''),
+        };
+      }
+    }
+
     return {
       // a posição no vetor do jogo; as vazias são descartadas no fim, então quem precisa contar
       // melhorias (a raridade limita quantas o item aceita) tem de usar isto, não o índice da
@@ -142,6 +188,7 @@ export function melhoriasDe(itemId, nivel, upgrades = 0) {
       no: m.no ?? null, // id do nó da árvore de habilidades, quando a melhoria dá nível nele
       ganho,
       armadura,
+      dano,
     };
   }).filter(Boolean);
 }
@@ -177,5 +224,5 @@ export function armaduraDe(itemId, nivel) {
 /** Se há algo a mostrar para este item. */
 export const temEstatisticas = (itemId) => {
   const reg = itens[itemId];
-  return Boolean(reg && (reg.a || reg.p || reg.r));
+  return Boolean(reg && (reg.a || reg.p || reg.r || reg.d));
 };
