@@ -1,6 +1,6 @@
 [package]
 name = "enshrouded-save-editor"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 description = "Editor de saves de personagem do Enshrouded 1.0 (versão Tauri)"
 

@@ -2,6 +2,14 @@
 
 *Read this in [English](CHANGELOG.md).*
 
+## 1.0.2 — 25/10/2026
+
+- **Os ícones da árvore de habilidades voltaram.** A 1.0.1 saiu com um `data/skills.json` regerado
+  por só uma das ferramentas que o constroem, e o passo que acrescenta os ícones não rodou — os 43
+  nós que têm um perderam, e a árvore ficou sem nenhum. Nada falhou; o campo simplesmente sumiu.
+- Um teste passou a exigir que cada arquivo de `data/` tenha todos os campos que a interface lê, e
+  que toda imagem citada por eles exista em `build-assets`.
+
 ## 1.0.1 — 24/10/2026
 
 Primeira rodada de correções depois do lançamento, puxada por duas issues e muita captura de
