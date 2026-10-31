@@ -1,0 +1,79 @@
+name: Bug report
+description: Report a problem with JJ's Enshrouded Save editor.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve JJ's Enshrouded Save editor by Jonaex LTD.
+        Please keep your original saves and backups. Only test edits on copies.
+        Issues and attachments here are public. If you prefer private sharing, contact RurushEdward through the Nexus mod page before sending a save.
+  - type: input
+    id: editor_version
+    attributes:
+      label: Editor version
+      placeholder: "For example: 0.2.0"
+    validations:
+      required: true
+  - type: input
+    id: game_version
+    attributes:
+      label: Enshrouded version or build
+      placeholder: "Include the game version/build shown by your installation, if known."
+    validations:
+      required: true
+  - type: dropdown
+    id: play_mode
+    attributes:
+      label: Play mode
+      options:
+        - Solo / local world
+        - Co-op (player-hosted)
+        - Dedicated server
+        - Other / unsure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include exactly what you changed in the editor and when the problem first appeared.
+      placeholder: |
+        1. Opened a copy of ...
+        2. Changed ...
+        3. Saved with the game closed ...
+        4. Loaded the character ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: Expected and actual behaviour
+      description: Include error text or screenshots where useful.
+    validations:
+      required: true
+  - type: textarea
+    id: restart
+    attributes:
+      label: Restart and comparison results
+      description: Did fully restarting the game and the host/server help? Does an unedited backup show the same problem?
+    validations:
+      required: false
+  - type: textarea
+    id: saves
+    attributes:
+      label: Save files (optional, public attachments)
+      description: |
+        ZIP the affected .ksd and its backup from before editing, in separate folders named affected/ and before-edit/. Drag the ZIP into this field (up to 25 MB).
+        Editor backups are normally under Documents/Enshrouded-Backups/jj-editor/; choose the matching character file from before the change.
+        Attach only the relevant character saves, not your entire Steam folder or server configuration. If sharing privately, say so here instead.
+    validations:
+      required: false
+  - type: textarea
+    id: other_mods
+    attributes:
+      label: Other relevant details
+      description: Other mods/tools, server settings, and whether other characters or players are affected.
+    validations:
+      required: false
