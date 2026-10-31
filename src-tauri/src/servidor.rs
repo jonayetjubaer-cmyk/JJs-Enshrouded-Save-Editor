@@ -45,7 +45,7 @@ pub struct ConfigPublica {
 
 fn config_dir() -> PathBuf {
     let base = std::env::var("APPDATA").unwrap_or_else(|_| ".".into());
-    PathBuf::from(base).join("enshrouded-save-editor")
+    PathBuf::from(base).join("jjs-enshrouded-save-editor")
 }
 
 fn config_path() -> PathBuf {

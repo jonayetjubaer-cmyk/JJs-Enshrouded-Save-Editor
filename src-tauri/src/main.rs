@@ -40,7 +40,7 @@ fn is_save(path: &str) -> Result<PathBuf, String> {
 
 fn backup_root() -> PathBuf {
     let home = std::env::var("USERPROFILE").unwrap_or_else(|_| ".".into());
-    Path::new(&home).join("Documents").join("Enshrouded-Backups").join("editor")
+    Path::new(&home).join("Documents").join("Enshrouded-Backups").join("jj-editor")
 }
 
 #[derive(Serialize)]
@@ -106,8 +106,8 @@ fn copy_dir(src: &Path, dst: &Path) -> std::io::Result<()> {
 }
 
 fn make_backup(file: &Path) -> Result<PathBuf, String> {
-    let secs = std::time::SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
-    let dir = backup_root().join(format!("tauri-{secs}"));
+    let stamp = std::time::SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
+    let dir = backup_root().join(format!("jj-{stamp}"));
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     fs::copy(file, dir.join(file.file_name().unwrap())).map_err(|e| e.to_string())?;
     if let Some(parent) = file.parent() {
@@ -232,4 +232,58 @@ fn percent_decode(s: &str) -> String {
         i += 1;
     }
     String::from_utf8_lossy(&out).to_string()
+}
+
+#[cfg(test)]
+mod jj_local_file_tests {
+    use super::*;
+
+    fn fixture() -> PathBuf {
+        let stamp = std::time::SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().join(".local").join("native-tests").join(stamp.to_string());
+        fs::create_dir_all(&root).unwrap();
+        let file = root.join("character-test.ksd");
+        fs::copy(Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().join(".local").join("character-test.original.ksd"), &file).unwrap();
+        file
+    }
+
+    #[test]
+    fn backup_write_read_and_restore_preserve_exact_bytes() {
+        assert!(!game_running(), "Close Enshrouded before running local write tests");
+        let file = fixture();
+        let path = file.to_string_lossy().to_string();
+        let original = fs::read(&file).unwrap();
+        let backup_dir = backup_file(path.clone()).unwrap();
+        let backup = PathBuf::from(backup_dir).join("character-test.ksd");
+        assert_eq!(fs::read(&backup).unwrap(), original);
+        let mut edited = original.clone();
+        edited[12] ^= 1; // header-only change; the fixture's section hashes remain valid
+        write_save(path.clone(), edited.clone()).unwrap();
+        assert_eq!(fs::read(&file).unwrap(), edited);
+        restore_backup(backup.to_string_lossy().to_string(), path.clone()).unwrap();
+        assert_eq!(fs::read(&file).unwrap(), original);
+        let backups = list_backups(path);
+        assert!(backups.len() >= 2, "Restoring must back up the current on-disk file first");
+        assert!(backups.iter().any(|b| fs::read(&b.path).unwrap() == edited));
+    }
+
+    #[test]
+    fn consecutive_backups_get_separate_directories() {
+        let file = fixture();
+        let first = make_backup(&file).unwrap();
+        let second = make_backup(&file).unwrap();
+        assert_ne!(first, second);
+        assert_eq!(fs::read(first.join("character-test.ksd")).unwrap(), fs::read(second.join("character-test.ksd")).unwrap());
+    }
+
+    #[test]
+    fn invalid_write_never_changes_the_existing_save() {
+        let file = fixture();
+        let original = fs::read(&file).unwrap();
+        assert!(write_save(file.to_string_lossy().to_string(), b"invalid".to_vec()).is_err());
+        assert_eq!(fs::read(&file).unwrap(), original);
+        let other = file.with_extension("txt");
+        assert!(write_save(other.to_string_lossy().to_string(), original).is_err());
+        assert!(!other.exists());
+    }
 }
