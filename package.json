@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "vite build",
-    "test": "node --test tests/jj-editing.test.mjs tests/jj-close.test.mjs tests/jj-i18n.test.mjs && node tests/dados-completos.mjs && node tests/soquete.mjs && node tests/itens-novos.mjs && node tests/nomes-por-idioma.mjs && node tests/estatisticas.mjs && node tests/todas-as-armas.mjs && node tests/ida-e-volta.mjs",
+    "test": "node --test tests/jj-editing.test.mjs tests/jj-close.test.mjs tests/jj-i18n.test.mjs tests/jj-character-layout.test.mjs tests/jj-skill-budget.test.mjs && node tests/dados-completos.mjs && node tests/soquete.mjs && node tests/itens-novos.mjs && node tests/nomes-por-idioma.mjs && node tests/estatisticas.mjs && node tests/todas-as-armas.mjs && node tests/ida-e-volta.mjs",
     "preview:jj": "vite --host 127.0.0.1 --port 5173 --open /?preview=1",
     "dist": "tauri build --no-bundle"
   },

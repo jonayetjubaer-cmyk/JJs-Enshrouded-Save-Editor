@@ -1,5 +1,12 @@
 # JJ edition changelog
 
+## Unreleased
+
+- Open compact character saves with zero to three equipped pieces, using extra mask/header checks and rejecting ambiguous layouts. This fixes the newly created character supplied in issue #2.
+- Preserve the compact inventory header when removing the last equipped piece.
+- Label the skill-point total as a validation-only budget and explain that it does not grant points in the game. Reject invalid stored budgets.
+- Add short/empty equipment layout and skill-budget regression tests. The reported in-game skill reset remains under investigation; no new Nexus package has been released.
+
 ## 0.2.0 — 29 October 2026
 
 - Added complete Italian, French and German editor translations.

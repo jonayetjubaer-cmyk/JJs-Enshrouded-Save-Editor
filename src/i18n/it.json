@@ -402,5 +402,10 @@
   "Weapons": "Armi",
   "Working…": "Operazione in corso…",
   "XP in level": "PE nel livello",
-  "Your changes are saved only when you click Save.": "Le modifiche vengono salvate solo quando fai clic su Salva."
+  "Your changes are saved only when you click Save.": "Le modifiche vengono salvate solo quando fai clic su Salva.",
+  "In-game total (validation only)": "Totale nel gioco (solo convalida)",
+  "Skill-point validation budget": "Limite di punti abilità per la convalida",
+  "The total above is only a validation budget. It is not saved to the game and does not grant extra skill points.": "Il totale qui sopra serve solo alla convalida. Non viene salvato nel gioco e non assegna punti abilità aggiuntivi.",
+  "Enter your actual earned total (spent + unspent). The game can reset a tree that exceeds its own point allowance.": "Inserisci il totale dei punti effettivamente ottenuti (spesi + disponibili). Il gioco può azzerare un albero che supera il limite di punti consentito.",
+  "Ambiguous equipment/inventory layout in this save.": "La struttura di equipaggiamento e inventario in questo salvataggio è ambigua."
 }
