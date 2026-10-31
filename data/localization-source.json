@@ -1,0 +1,24 @@
+{
+  "source": "Installed Enshrouded 1.0 official localization",
+  "extractor": "kfc-parser v0.2.0 + scripts/extract-game-locales.mjs",
+  "languages": {
+    "it": {
+      "items": 4018,
+      "skillDescriptions": 243,
+      "knowledgeNames": 0,
+      "statLabels": 306
+    },
+    "fr": {
+      "items": 4018,
+      "skillDescriptions": 243,
+      "knowledgeNames": 0,
+      "statLabels": 306
+    },
+    "de": {
+      "items": 4018,
+      "skillDescriptions": 243,
+      "knowledgeNames": 0,
+      "statLabels": 306
+    }
+  }
+}
