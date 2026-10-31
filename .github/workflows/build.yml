@@ -24,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
 
       - uses: dtolnay/rust-toolchain@stable
@@ -37,13 +37,14 @@ jobs:
       - name: Teste de ida e volta do leitor de save
         run: npm test
 
-      - name: Compilar
-        run: npx tauri build --no-bundle
+      - name: Build JJ edition
+        shell: pwsh
+        run: ./build-windows.ps1
 
       - name: Conferir que o executável saiu
         shell: pwsh
         run: |
-          $exe = "src-tauri/target/release/enshrouded-save-editor.exe"
+          $exe = "release/JJs-Enshrouded-Save-Editor.exe"
           if (-not (Test-Path $exe)) { throw "o executavel nao foi gerado" }
           $tamanho = (Get-Item $exe).Length
           Write-Host "executavel: $tamanho bytes"
@@ -52,23 +53,30 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: enshrouded-save-editor
-          path: src-tauri/target/release/enshrouded-save-editor.exe
+          name: JJs-Enshrouded-Save-Editor
+          path: |
+            release/JJs-Enshrouded-Save-Editor.exe
+            release/LICENSE
+            release/CREDITS.md
           if-no-files-found: error
 
       - name: Publicar release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: src-tauri/target/release/enshrouded-save-editor.exe
+          files: |
+            release/JJs-Enshrouded-Save-Editor.exe
+            release/LICENSE
+            release/CREDITS.md
           generate_release_notes: true
           body: |
-            Baixe o `enshrouded-save-editor.exe` e rode. Não precisa instalar nada: os recursos da
-            interface vão dentro do executável.
+            JJ's Enshrouded Save editor by Jonaex LTD — compact desktop edition.
+
+            Download `JJs-Enshrouded-Save-Editor.exe` and run it. The interface and game data are embedded.
+            This edition is based on Nicolas Ferreira's MIT-licensed editor; retain LICENSE and CREDITS.md.
 
             Para editar as cópias de personagem de um servidor dedicado, é preciso o
             [Enshrouded Server Guardian](https://github.com/nicolasferreiraxn/Enshrouded-Server-Guardian)
             rodando nele. Sem o guardião, o editor trabalha nos saves locais do seu jogo.
 
-            Este arquivo foi compilado pelo GitHub Actions a partir deste repositório — o log do
-            build é público e pode ser conferido na aba Actions.
+            Built by GitHub Actions from this repository. Public build logs are available in Actions.
