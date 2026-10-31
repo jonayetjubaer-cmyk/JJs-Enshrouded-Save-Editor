@@ -402,5 +402,10 @@
   "Weapons": "Armes",
   "Working…": "Opération en cours…",
   "XP in level": "EXP du niveau",
-  "Your changes are saved only when you click Save.": "Les modifications ne sont enregistrées que lorsque vous cliquez sur Enregistrer."
+  "Your changes are saved only when you click Save.": "Les modifications ne sont enregistrées que lorsque vous cliquez sur Enregistrer.",
+  "In-game total (validation only)": "Total dans le jeu (validation uniquement)",
+  "Skill-point validation budget": "Budget de points de compétence pour la validation",
+  "The total above is only a validation budget. It is not saved to the game and does not grant extra skill points.": "Le total ci-dessus sert uniquement à la validation. Il n’est pas enregistré dans le jeu et n’accorde aucun point de compétence supplémentaire.",
+  "Enter your actual earned total (spent + unspent). The game can reset a tree that exceeds its own point allowance.": "Saisissez le total des points réellement obtenus (dépensés + disponibles). Le jeu peut réinitialiser un arbre qui dépasse son propre nombre de points autorisé.",
+  "Ambiguous equipment/inventory layout in this save.": "La structure de l’équipement et de l’inventaire de cette sauvegarde est ambiguë."
 }

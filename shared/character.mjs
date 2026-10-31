@@ -8,8 +8,8 @@ import { Buffer } from 'buffer';
 // u32 máscara dos espaços de equipamento ocupados (4 bytes antes da lista)
 // equipamento: lista densa, uma entrada por bit aceso da máscara, em ordem crescente;
 //   o campo slot da entrada é o índice nessa lista (0, 1, 2...), não o espaço do boneco
-// u16 espaços de equipamento livres (logo depois da lista)
-// trecho opaco que termina em [05][qtd principal][04][qtd extra]
+// trecho opaco que termina em [05][qtd principal][grupos extra][qtd extra]; em saves
+// compactos são só esses 4 bytes, sem o prefixo u16 tratado pelos layouts antigos
 // entradas do inventário principal, depois as do contêiner extra, depois o resto (opaco)
 //
 // Medido em três saves do mesmo personagem (16, 15 e 14 peças): tirar a peça de índice k apaga
@@ -22,7 +22,7 @@ import { Buffer } from 'buffer';
 //   0x20 5 bytes (engaste, preservado)
 const KNOWN_FLAGS = 0x01 | 0x02 | 0x04 | 0x08 | 0x10 | 0x20;
 const EQUIP_MAX = 24;       // teto da lista densa (o personagem medido tem 16)
-const MIN_EQUIP = 4;        // menos que isso é coincidência, não a lista de equipamento
+const DENSE_EQUIP_MIN = 4; // short/empty lists need additional structural checks
 const EQUIP_EXTRA_BITS = 4; // bits acesos fora da lista (as armas); medido = 2
 
 /** Quantidade de bits acesos. */
@@ -109,22 +109,31 @@ function parseCharacter(p, isItem, isSkill, ehEquipavel = null) {
       if (!e || e.slot >= EQUIP_MAX || e.slot !== list.length) break;
       list.push(e); q = e._end;
     }
-    if (list.length < MIN_EQUIP) continue;
     // só peças vestíveis: a mochila também é uma lista densa começando no 0, e sem isso o
     // editor pode confundir as duas e gravar um save corrompido
     if (ehEquipavel && !list.every((e) => ehEquipavel(e.itemId))) continue;
-    const found = findInventory(q);
-    if (!found) continue;
     const mask = p.readUInt32LE(s - 4);
-    const free = p.readUInt16LE(q);
+    if (list.length < DENSE_EQUIP_MIN) {
+      // Worn/vanity slots occupy the lower 16 bits. Require a clothing predicate and an
+      // exact bit count for short lists: an item-like byte sequence alone is not enough.
+      if (!ehEquipavel || popcount(mask & 0xffff) !== list.length) continue;
+      // An empty compact equipment list has the inventory header immediately after it.
+      // Reject other empty layouts instead of treating arbitrary zero bytes as equipment.
+      if (!list.length && (p[q] !== 0x05 || p[q + 2] > 8)) continue;
+    }
+    const found = findInventory(q);
+    if (!found || (!list.length && found.invStart !== q + 4)) continue;
+    const free = found.invStart === q + 4 ? 0 : p.readUInt16LE(q);
     // a máscara precisa ter um bit aceso para cada peça (mais os das armas, fora desta lista)
     const bits = popcount(mask);
     if (bits < list.length || bits > list.length + EQUIP_EXTRA_BITS) continue;
     candidatos.push({ equipStart: s, equipment: list, inv: found, mask, free, equipEnd: q });
   }
   if (!candidatos.length) throw new Error('Equipamento/inventário não encontrado no save');
-  // o equipamento vem antes do inventário no bloco, então o primeiro candidato é o certo
-  const { equipStart, equipment, inv, mask, free, equipEnd } = candidatos[0];
+  // Preserve existing dense-list selection. Short/empty lists must be unambiguous.
+  const dense = candidatos.filter((c) => c.equipment.length >= DENSE_EQUIP_MIN);
+  if (!dense.length && candidatos.length !== 1) throw new Error('Equipamento/inventário ambíguo no save');
+  const { equipStart, equipment, inv, mask, free, equipEnd } = dense[0] || candidatos[0];
   const { invStart, mainCount, extraCount } = inv;
   const main = [], extra = [];
   let q = invStart;
@@ -190,7 +199,9 @@ function buildCharacter(c) {
     if (mid.length < 4 || between.length < 2) throw new Error('Não achei a máscara de equipamento neste save');
     const { mask, free } = ajustaEquipamento(c._equipMask, c._equipFree, tirados);
     mid.writeUInt32LE(mask, mid.length - 4);
-    between.writeUInt16LE(free, 0);
+    // Compact saves have only the four-byte inventory header here, with no free-slot
+    // prefix. Writing a u16 into it would overwrite the inventory type and item count.
+    if (between.length > 4) between.writeUInt16LE(free, 0);
   }
   const equip = ficam.map((e, i) => writeEntry({ ...e, slot: i }));
 

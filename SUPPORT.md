@@ -22,3 +22,9 @@ GitHub issues and their attachments in this repository are public. If you prefer
 An open investigation tracks [Nexus report 1162552, "Healing and Mana"](https://www.nexusmods.com/enshrouded/mods/249?tab=bugs). Other players have reported similar effects clearing after a host/server restart, but the cause of this particular report is not confirmed. First try a normal restart of the host/server and a full restart of all affected clients, then retest before making further edits.
 
 The level-only writer check has passed against a local save, preserving every unrelated character byte and every other container block. This does not replace comparing the reporter's affected save and its pre-edit backup or reproducing the behaviour in game.
+
+## Skill editing and point totals
+
+The Skills tab's total is a validation budget. Enter the number of points your game actually grants (spent plus unspent). Changing that value only updates the editor's checks; it does not write an earned-point balance into the game. Spending more than the game allows can cause it to refund/reset the skill tree on loading.
+
+For a skill reset or an edit that does not persist, include the exact node/rank changes, the budget you entered and a screenshot of the game's spent/unspent total. The most useful comparison is the character's save before editing, immediately after saving in the editor, and after loading/saving in the game. Keep each version in a separate, clearly named folder. A character's server history is useful context, but has not been confirmed as the cause of these reports.

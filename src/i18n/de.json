@@ -402,5 +402,10 @@
   "Weapons": "Waffen",
   "Working…": "Vorgang läuft…",
   "XP in level": "EP in dieser Stufe",
-  "Your changes are saved only when you click Save.": "Deine Änderungen werden erst gespeichert, wenn du auf Speichern klickst."
+  "Your changes are saved only when you click Save.": "Deine Änderungen werden erst gespeichert, wenn du auf Speichern klickst.",
+  "In-game total (validation only)": "Gesamtpunkte im Spiel (nur zur Prüfung)",
+  "Skill-point validation budget": "Fertigkeitspunkte-Budget zur Prüfung",
+  "The total above is only a validation budget. It is not saved to the game and does not grant extra skill points.": "Die Gesamtzahl oben dient nur zur Prüfung. Sie wird nicht im Spiel gespeichert und gewährt keine zusätzlichen Fertigkeitspunkte.",
+  "Enter your actual earned total (spent + unspent). The game can reset a tree that exceeds its own point allowance.": "Gib die tatsächlich verdiente Gesamtzahl ein (ausgegeben + verfügbar). Das Spiel kann einen Fertigkeitsbaum zurücksetzen, wenn dessen Kosten die erlaubten Punkte überschreiten.",
+  "Ambiguous equipment/inventory layout in this save.": "Die Anordnung von Ausrüstung und Inventar in diesem Spielstand ist nicht eindeutig."
 }

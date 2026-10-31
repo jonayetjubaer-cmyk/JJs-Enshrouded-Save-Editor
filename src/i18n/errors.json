@@ -29,5 +29,6 @@
   "não consegui listar {detail}": "Could not list the server directory: {detail}",
   "Não sei qual espaço de equipamento corresponde à peça {detail}": "Could not determine the equipment slot for entry {detail}",
   "Bloco {detail} sem assinatura S2BH": "Block {detail} has no S2BH signature.",
-  "Hash do bloco {detail} não confere": "The checksum of block {detail} does not match."
+  "Hash do bloco {detail} não confere": "The checksum of block {detail} does not match.",
+  "Equipamento/inventário ambíguo no save": "Ambiguous equipment/inventory layout in this save."
 }

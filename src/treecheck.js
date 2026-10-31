@@ -22,7 +22,12 @@ export function totalKey(model) {
   return `ese.totalPoints.${model.path}.${model.level}`;
 }
 export function knownTotal(model) {
-  try { const v = localStorage.getItem(totalKey(model)); return v === null ? null : Number(v); } catch { return null; }
+  try {
+    const value = localStorage.getItem(totalKey(model));
+    if (value === null || value.trim() === '') return null;
+    const total = Number(value);
+    return Number.isSafeInteger(total) && total >= 0 ? total : null;
+  } catch { return null; }
 }
 
 export function checkTree(model) {

@@ -2,6 +2,16 @@
 
 Tested on Windows on 27 October 2026.
 
+## Unreleased issue #2 investigation — 31 October 2026
+
+- The attached archive contains three character saves. The original parser opened the level-44 and level-3 characters but refused the new level-1 character, whose equipment list has one entry. The old minimum was four entries.
+- The parser now accepts short lists only with an explicit wearable predicate, matching lower equipment-mask bit count and an unambiguous candidate. Empty compact layouts additionally require the inventory header immediately after the empty equipment list. Existing dense-list handling is retained.
+- Compact layouts have no two-byte free-slot prefix before the inventory header. Removing the final item now changes the equipment mask without overwriting the inventory header.
+- All three supplied character blocks rebuild byte-for-byte identically. In-memory XP changes, learning a root-connected skill and skill refunds rebuild and parse correctly. The new character also survives removal of its final equipment piece. All other compressed save blocks remain byte-identical and the supplied files remain unchanged. No reporter save is committed or installed into a game.
+- The total-points control is explicitly a validation budget, with Italian, French and German messages explaining that it is not a saved earned-point balance. Invalid/non-integer stored budgets become unknown rather than bypassing the budget guard.
+- Eleven new regression tests cover zero through three equipped pieces, compact removal, adding/refunding skill records, invalid masks, ambiguous layouts and budget validation/isolation. The complete JavaScript suite and production frontend build pass.
+- These checks establish the character-opening fix and byte preservation, not in-game skill acceptance. The in-game skill reset still needs a pre-edit save, exact rank/budget changes, the game's actual point total and a comparison after loading. Both GitHub issues remain open. No new Nexus release is published.
+
 ## Nexus issue 1162552: Healing and Mana — 31 October 2026
 
 - Report: <https://www.nexusmods.com/enshrouded/mods/249?tab=bugs>. The reporter changed a new character to level 5 and then observed health/mana on hit even with equipment and learned skills removed; another character also appeared affected.
