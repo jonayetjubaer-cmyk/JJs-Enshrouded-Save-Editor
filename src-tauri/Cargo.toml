@@ -1,8 +1,10 @@
 [package]
-name = "enshrouded-save-editor"
-version = "1.0.2"
+name = "jjs-enshrouded-save-editor"
+version = "0.2.0"
+authors = ["Jonaex LTD"]
+license = "MIT"
 edition = "2021"
-description = "Editor de saves de personagem do Enshrouded 1.0 (versão Tauri)"
+description = "JJ's Enshrouded Save editor, based on Nicolas Ferreira's MIT-licensed editor"
 
 [build-dependencies]
 tauri-build = { version = "=2.7.1", features = [] }
