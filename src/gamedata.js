@@ -20,7 +20,10 @@ export const nomeDe = (o, reserva) => {
 export const itemName = (id) => nomeDe(items[id], items[id]?.debug || `#${id}`);
 
 // A descrição do nó é guardada em `desc` e `descEn`, e não em `pt`/`en` como o nome.
-export const descricaoDe = (no) => (campoDeNome() === 'pt' ? no?.desc : no?.descEn) || no?.desc || '';
+export const descricaoDe = (no) => {
+  const field = { pt: 'desc', en: 'descEn', it: 'descIt', fr: 'descFr', de: 'descDe' }[campoDeNome()];
+  return no?.[field] || no?.descEn || no?.desc || '';
+};
 export const skillName = (id) => nomeDe(skills.nodes[id], `#${id}`);
 
 // O conhecimento quase sempre é um item ou a receita de um item, e aí o nome sai do `items.json`
@@ -28,7 +31,7 @@ export const skillName = (id) => nomeDe(skills.nodes[id], `#${id}`);
 // idioma só.
 export const nomeConhecimento = (info, id) => {
   if (info?.i !== undefined) return itemName(info.i);
-  return info?.n ?? `#${id}`;
+  return info?.[campoDeNome()] || info?.n || `#${id}`;
 };
 
 export const ATRIBUTOS = ['Constituição', 'Espírito', 'Resistência', 'Força', 'Destreza', 'Inteligência'];

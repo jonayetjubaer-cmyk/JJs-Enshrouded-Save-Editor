@@ -49,7 +49,7 @@ export default function ItemStats({ entry }) {
               <span className="st-ganho">{m.ganho ? `+${m.ganho.fisica}/+${m.ganho.magica}` : ''}</span>
               <span className="st-efeitos">
                 {m.armadura && <Linha valor={`+${m.armadura.valor}`} nome={m.armadura.nome} />}
-                {m.dano && <Linha valor={`+${m.dano.valor}`} nome={m.dano.nome} />}
+                {m.dano && <Linha valor={`+${num(m.dano.valor)}`} nome={m.dano.nome} />}
                 {m.linhas.map((l, i) => <Linha key={i} {...l} />)}
                 {m.no !== null && skills.nodes[m.no] && (
                   <span className="hint">{t('aumenta o nível de {no} na árvore', { no: skillName(m.no) })}</span>

@@ -1,10 +1,12 @@
 // A mesma interface roda no Electron (window.api do preload) e no Tauri (src/tauri-api.js).
 import tauriApi from './tauri-api.js';
+import { createPreviewApi } from './preview-api.js';
 
 export const IS_TAURI = typeof window !== 'undefined' && !!window.__TAURI_INTERNALS__;
-export const api = IS_TAURI ? tauriApi : window.api;
+export const IS_PREVIEW = import.meta.env.DEV && !IS_TAURI && new URLSearchParams(window.location.search).get('preview') === '1';
+export const api = IS_TAURI ? tauriApi : window.api || (IS_PREVIEW ? createPreviewApi() : null);
 // recursos do jogo: protocolo game:// no Electron; no Tauri (Windows) o esquema vira http://game.localhost/
-export const ASSET_BASE = IS_TAURI ? 'http://game.localhost/' : 'game://';
+export const ASSET_BASE = IS_TAURI ? 'http://game.localhost/' : IS_PREVIEW ? '/game/' : 'game://';
 
 // fontes do jogo (UiFontResource), registradas aqui porque o endereço depende da plataforma
 export function registerFonts() {

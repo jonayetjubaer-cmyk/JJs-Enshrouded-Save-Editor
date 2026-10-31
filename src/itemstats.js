@@ -9,7 +9,7 @@ export const BALANCEAMENTO = balanceamento;
 const nomeDoTexto = (id) => {
   const par = nomes[id];
   if (!par) return `#${id}`;
-  return (campoDeNome() === 'pt' ? par[0] : par[1]) || par[1] || par[0] || `#${id}`;
+  return par[{ pt: 0, en: 1, it: 2, fr: 3, de: 4 }[campoDeNome()] ?? 1] || par[1] || par[0] || `#${id}`;
 };
 
 /**

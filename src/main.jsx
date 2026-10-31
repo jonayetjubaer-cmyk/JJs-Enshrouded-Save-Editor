@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.jsx';
-import './styles.css';
+import App from './JJApp.jsx';
+import './jj-desktop.css';
 import { registerFonts } from './platform.js';
 
 registerFonts();

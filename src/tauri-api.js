@@ -11,13 +11,13 @@ import items from '../data/items.json';
 import { itemName, nomeConhecimento } from './gamedata.js';
 import skills from '../data/skills.json';
 import mapaConhecimento from '../data/conhecimento.json';
-import { t, dataHora } from './i18n.js';
+import { t, dataHora, displayError } from './i18n.js';
 
 // O invoke do Tauri rejeita com a string do Err do Rust, que não tem .message: quem fazia
 // `catch (e) => e.message` mostrava "undefined" e perdia o motivo do erro. Embrulhamos aqui, numa
 // vez só, para todas as chamadas.
 const invoke = (cmd, args) => invokeTauri(cmd, args).catch((e) => {
-  throw e instanceof Error ? e : new Error(typeof e === 'string' ? e : JSON.stringify(e));
+  throw new Error(displayError(e instanceof Error ? e : typeof e === 'string' ? e : JSON.stringify(e)));
 });
 
 const isItem = (id) => Object.prototype.hasOwnProperty.call(items, id);

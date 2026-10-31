@@ -1,25 +1,36 @@
-// A chave de tradução é o próprio texto em português: o que não for traduzido aparece em
-// português em vez de virar "menu.botao.salvar" na tela. O preço é que mudar o texto quebra a
-// chave. Como contribuir com um idioma está no README.
+// Accept legacy Portuguese message keys and English keys from the JJ interface.
+// Dictionaries never alter model IDs, file paths, saved bytes, or player names.
 
-import en from './i18n/en.json';
+import en from './i18n/en.json' with { type: 'json' };
+import it from './i18n/it.json' with { type: 'json' };
+import fr from './i18n/fr.json' with { type: 'json' };
+import de from './i18n/de.json' with { type: 'json' };
+import errors from './i18n/errors.json' with { type: 'json' };
 
 export const IDIOMAS = [
-  { codigo: 'pt-BR', nome: 'Português', locale: 'pt-BR', dicionario: null },
-  { codigo: 'en', nome: 'English', locale: 'en-US', dicionario: en },
+  { codigo: 'en', nome: 'English', locale: 'en-US', campo: 'en' },
+  { codigo: 'pt-BR', nome: 'Português', locale: 'pt-BR', campo: 'pt' },
+  { codigo: 'it', nome: 'Italiano', locale: 'it-IT', campo: 'it', dicionario: it },
+  { codigo: 'fr', nome: 'Français', locale: 'fr-FR', campo: 'fr', dicionario: fr },
+  { codigo: 'de', nome: 'Deutsch', locale: 'de-DE', campo: 'de', dicionario: de },
 ];
 
-const CHAVE_GUARDADA = 'enshrouded-save-editor:idioma';
+export const LANGUAGE_STORAGE_KEY = 'enshrouded-save-editor:idioma';
+const CHAVE_GUARDADA = LANGUAGE_STORAGE_KEY;
+export function detectLanguage(saved, system = '') {
+  if (IDIOMAS.some((i) => i.codigo === saved)) return saved;
+  const base = system.toLowerCase().split(/[-_]/)[0];
+  return IDIOMAS.find((i) => i.codigo.toLowerCase().split('-')[0] === base)?.codigo || 'en';
+}
 
 function inicial() {
   try {
     const salvo = localStorage.getItem(CHAVE_GUARDADA);
     if (salvo && IDIOMAS.some((i) => i.codigo === salvo)) return salvo;
   } catch { /* navegador sem armazenamento: segue no padrão */ }
-  // sem escolha salva, tenta o idioma do sistema e cai no português
+  // Detect the system language on first launch; a saved choice takes precedence.
   const sistema = (typeof navigator !== 'undefined' && navigator.language) || '';
-  if (sistema.toLowerCase().startsWith('pt')) return 'pt-BR';
-  return IDIOMAS.find((i) => sistema.toLowerCase().startsWith(i.codigo.toLowerCase()))?.codigo ?? 'pt-BR';
+  return detectLanguage(null, sistema);
 }
 
 let atual = inicial();
@@ -28,10 +39,10 @@ const ouvintes = new Set();
 export const idiomaAtual = () => atual;
 export const localeAtual = () => IDIOMAS.find((i) => i.codigo === atual)?.locale ?? 'pt-BR';
 
-// Nome de item e de habilidade não é traduzido aqui: o jogo já traz os dois, e `data/items.json`
-// guarda `pt` e `en` por item. Isto diz de qual campo ler. Um idioma que não seja português cai no
-// inglês, porque é a outra localização que temos — o README avisa.
-export const campoDeNome = () => (atual === 'pt-BR' ? 'pt' : 'en');
+// Game names/descriptions are the game's own localization, stored separately
+// from editor messages. Never translate identifiers used by the save format.
+export const campoDeNome = () => IDIOMAS.find((i) => i.codigo === atual)?.campo || 'en';
+const reverse = Object.fromEntries(Object.entries(en).map(([pt, english]) => [english, pt]));
 
 // o `lang` do documento guia leitor de tela, hifenização e correção ortográfica dos campos
 function marcarNoDocumento() {
@@ -54,12 +65,25 @@ export function assinarIdioma(f) {
 
 /** t('nível {n}', { n: 5 }). Sem tradução, devolve a própria chave. */
 export function t(texto, vars) {
+  if (typeof texto !== 'string') return texto;
   const dic = IDIOMAS.find((i) => i.codigo === atual)?.dicionario;
-  let s = (dic && dic[texto]) || texto;
-  if (vars) {
-    for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(String(v));
-  }
-  return s;
+  const canonical = en[texto] || errors[texto] || texto;
+  const translated = atual === 'pt-BR' ? reverse[canonical] || texto : dic?.[canonical] || canonical;
+  // Interpolate once: braces in a character name or path must remain literal.
+  return translated.replace(/\{([^{}]+)\}/g, (match, key) => vars && Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : match);
+}
+
+export function tn(one, many, count, vars = {}) {
+  return t(new Intl.PluralRules(localeAtual()).select(count) === 'one' ? one : many, { v0: count, ...vars });
+}
+
+const errorPatterns = Object.entries(errors).filter(([key]) => key.includes('{detail}')).map(([key, value]) => ({
+  pattern: new RegExp('^' + key.split('{detail}').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('([\\s\\S]+)') + '$'), value,
+}));
+export function displayError(error) {
+  const text = error?.message || String(error);
+  for (const { pattern, value } of errorPatterns) { const match = text.match(pattern); if (match) return t(value, { detail: match[1] }); }
+  return t(text);
 }
 
 export const dataHora = (ms) => new Date(ms).toLocaleString(localeAtual());
