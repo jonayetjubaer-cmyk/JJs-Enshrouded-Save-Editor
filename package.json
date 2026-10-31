@@ -1,13 +1,14 @@
 {
-  "name": "enshrouded-save-editor",
-  "version": "1.0.2",
-  "description": "Editor de save do Enshrouded, com suporte às cópias do Enshrouded Server Guardian.",
+  "name": "jjs-enshrouded-save-editor",
+  "version": "0.2.0",
+  "description": "JJ's Enshrouded Save editor — compact desktop edition based on Nicolas Ferreira's MIT-licensed editor.",
   "main": "electron/main.cjs",
   "private": true,
   "scripts": {
     "dev": "tauri dev",
     "build": "vite build",
-    "test": "node tests/dados-completos.mjs && node tests/soquete.mjs && node tests/itens-novos.mjs && node tests/nomes-por-idioma.mjs && node tests/estatisticas.mjs && node tests/todas-as-armas.mjs && node tests/ida-e-volta.mjs",
+    "test": "node --test tests/jj-editing.test.mjs tests/jj-close.test.mjs tests/jj-i18n.test.mjs && node tests/dados-completos.mjs && node tests/soquete.mjs && node tests/itens-novos.mjs && node tests/nomes-por-idioma.mjs && node tests/estatisticas.mjs && node tests/todas-as-armas.mjs && node tests/ida-e-volta.mjs",
+    "preview:jj": "vite --host 127.0.0.1 --port 5173 --open /?preview=1",
     "dist": "tauri build --no-bundle"
   },
   "dependencies": {
@@ -17,15 +18,16 @@
     "hash-wasm": "4.12.0"
   },
   "devDependencies": {
+    "@babel/parser": "8.0.10",
     "@tauri-apps/cli": "^2.12.1",
-    "@vitejs/plugin-react": "4.3.3",
+    "@vitejs/plugin-react": "6.1.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "vite": "5.4.10"
+    "vite": "8.3.5"
   },
   "build": {
-    "appId": "local.nicolas.enshrouded-save-editor",
-    "productName": "Enshrouded Save Editor",
+    "appId": "local.jj.enshrouded-save-editor",
+    "productName": "JJ's Enshrouded Save editor",
     "directories": {
       "output": "release"
     },
@@ -59,5 +61,7 @@
     "compression": "maximum"
   },
   "build_note": "O campo \"build\" abaixo é só do Electron (legado); a versão principal é a Tauri em src-tauri/.",
-  "license": "MIT"
+  "license": "MIT",
+  "author": "Jonaex LTD",
+  "type": "module"
 }

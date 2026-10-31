@@ -1,5 +1,11 @@
 node_modules/
+.local/
+release/
 dist/
 src-tauri/target/
 src-tauri/gen/
 *.ksd
+*.ksd.*
+*.bin
+.env
+.env.*
