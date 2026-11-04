@@ -8,7 +8,7 @@ import { assinarIdioma, definirIdioma, idiomaAtual } from './i18n.js';
 import licenseText from '../LICENSE?raw';
 import { Icon, Button, Dialog, Empty, InventoryPanel, CharacterPanel, SkillsPanel, KnowledgePanel, ServerPanel, BackupsDialog } from './desktop-panels.jsx';
 
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const TABS = [['character', 'Character', 'person'], ['inventory', 'Inventory', 'inventory'], ['equipment', 'Equipment', 'equipment'], ['skills', 'Skills', 'skills'], ['knowledge', 'Knowledge', 'knowledge'], ['server', 'Server', 'server']];
 const clone = (value) => structuredClone(value);
 const readTheme = () => { try { return localStorage.getItem('jj.enshrouded.theme') || 'system'; } catch { return 'system'; } };

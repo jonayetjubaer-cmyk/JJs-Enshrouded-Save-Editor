@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { parseCharacter, buildCharacter } from '../shared/character.mjs';
+import { parseCharacter, buildCharacter, unknownItemsUnchanged } from '../shared/character.mjs';
 
 const items=JSON.parse(fs.readFileSync(new URL('../data/items.json',import.meta.url),'utf8'));
 const skills=JSON.parse(fs.readFileSync(new URL('../data/skills.json',import.meta.url),'utf8'));
@@ -58,4 +58,70 @@ test('ambiguous empty equipment layouts are refused rather than guessed',()=>{
   const fixture=compact(0);
   fixture._raw.tail=Buffer.from([0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0]);
   assert.throws(()=>read(buildCharacter(fixture)),/ambíguo/);
+});
+
+const UNKNOWN=0xfefefefe;
+const knownItem=id=>!!items[id];
+function withUnknown(prefix=0,container='main'){
+  const c=compact(3);
+  c.main=[0,1,2].map(slot=>({slot,itemId:1457307757,count:slot+1,level:1}));
+  c[container].push({slot:3,itemId:UNKNOWN,count:32769,level:1});
+  if(container==='extra')c._raw.between[2]=1;
+  if(prefix){
+    c.equipment.push({slot:3,itemId:Number(Object.keys(items).find(id=>items[id].slot==='Armour_Feet')),count:1});
+    c._equipCount=4;c._equipMask|=1<<9;c._raw.mid.writeUInt32LE(c._equipMask,c._raw.mid.length-4);
+    c._raw.between=Buffer.concat([Buffer.from([9,0]),c._raw.between]);
+  }
+  return c;
+}
+
+for(const prefix of [0,2])for(const container of ['main','extra'])test(`catalogue misses in ${container}, prefix ${prefix}: exact preservation and supported edits`,()=>{
+  const bytes=buildCharacter(withUnknown(prefix,container)),c=read(bytes);
+  assert.deepEqual(buildCharacter(c),bytes);
+  assert.equal(c[container].find(e=>e.itemId===UNKNOWN).count,32769);
+  const next={...c,xp:c.xp+1,main:c.main.map(e=>e.itemId===1457307757?{...e,count:e.count+2}:e)};
+  assert.equal(unknownItemsUnchanged(c,next,knownItem),true);
+  const back=read(buildCharacter(next));
+  assert.equal(back.xp,next.xp);
+  assert.deepEqual(back[container].find(e=>e.itemId===UNKNOWN),c[container].find(e=>e.itemId===UNKNOWN));
+});
+
+test('unknown entries cannot be modified, replaced, moved, deleted, duplicated or created',()=>{
+  const c=read(buildCharacter(withUnknown())),entry=c.main.find(e=>e.itemId===UNKNOWN);
+  const changes=[
+    {...c,main:c.main.map(e=>e===entry?{...e,count:1}:e)},
+    {...c,main:c.main.map(e=>e===entry?{...e,level:2}:e)},
+    {...c,main:c.main.map(e=>e===entry?{...e,slot:4}:e)},
+    {...c,main:c.main.filter(e=>e!==entry)},
+    {...c,main:[...c.main,{...entry,slot:4}]},
+    {...c,main:c.main.filter(e=>e!==entry),extra:[entry]},
+    {...c,main:c.main.map(e=>e===entry?{...e,itemId:1457307757}:e)},
+    {...c,main:[...c.main,{...entry,itemId:UNKNOWN-1,slot:4}]},
+    {...c,main:[...c.main,{slot:entry.slot,itemId:1457307757,count:1}]},
+  ];
+  for(const next of changes)assert.equal(unknownItemsUnchanged(c,next,knownItem),false);
+  assert.equal(unknownItemsUnchanged(c,structuredClone(c),knownItem),true);
+});
+
+test('catalogue miss fallback refuses unknown flags, duplicate slots, unsorted slots and unanchored headers',()=>{
+  for(const change of [
+    c=>{c.main[3].slot=1;},
+    c=>{c._raw.between=Buffer.concat([Buffer.alloc(8,0xa7),c._raw.between]);},
+  ]){
+    const c=withUnknown();change(c);
+    const bytes=buildCharacter(c);
+    assert.throws(()=>read(bytes));
+  }
+  const fixture=withUnknown(),unsorted=buildCharacter(fixture),start=unsorted.length-fixture._raw.tail.length-36;
+  const first=Buffer.from(unsorted.subarray(start,start+9));
+  unsorted.copy(unsorted,start,start+9,start+18);first.copy(unsorted,start+9);
+  assert.throws(()=>read(unsorted));
+  const bytes=buildCharacter(withUnknown()),offset=bytes.indexOf(Buffer.from([0xfe,0xfe,0xfe,0xfe]));
+  bytes[offset+6]=0x80;
+  assert.throws(()=>read(bytes));
+});
+
+test('a catalogue miss does not permit an inventory of arbitrary unrecognised IDs',()=>{
+  const c=withUnknown();c.main=c.main.map(e=>({...e,itemId:UNKNOWN}));
+  assert.throws(()=>read(buildCharacter(c)));
 });

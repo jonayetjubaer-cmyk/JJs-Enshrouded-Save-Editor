@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 import { invoke as invokeTauri } from '@tauri-apps/api/core';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import * as sv2c from '../shared/sv2c-web.mjs';
-import { parseCharacter, buildCharacter } from '../shared/character.mjs';
+import { parseCharacter, buildCharacter, unknownItemsUnchanged } from '../shared/character.mjs';
 import * as know from '../shared/knowledge.mjs';
 import { compararSaves, motivoEmTexto } from '../shared/recusa.mjs';
 import items from '../data/items.json';
@@ -56,13 +56,13 @@ function publicModel(path, modified, s) {
   };
 }
 
-function checkModel(m) {
+function checkModel(m, original) {
+  if (!unknownItemsUnchanged(original, m, isItem)) throw new Error(t('Unknown inventory items must stay unchanged. Edit or remove them in the game first.'));
   const ints = (v, max) => Number.isInteger(v) && v >= 0 && v <= max;
   if (!ints(m.level, 1000) || !ints(m.xp, 0xffffffff)) throw new Error(t('Nível ou XP inválido'));
   for (const s of m.skills) if (!isSkill(s.id) || !ints(s.level, 255)) throw new Error(t('Habilidade inválida'));
   for (const list of [m.equipment, m.main, m.extra]) {
     for (const e of list) {
-      if (!isItem(e.itemId)) throw new Error(t('Item desconhecido: {id}', { id: e.itemId }));
       if (!ints(e.slot, 255) || !ints(e.count, 65535)) throw new Error(t('Slot ou quantidade inválidos'));
     }
   }
@@ -342,7 +342,7 @@ export default {
     if (await invoke('game_running')) throw new Error(t('Feche o Enshrouded antes de salvar: o jogo sobrescreveria a edição.'));
     const s = sessions.get(path);
     if (!s?.character) throw new Error(t('Save não aberto para edição'));
-    checkModel(model);
+    checkModel(model, s.character);
     const c = { ...s.character, level: model.level, xp: model.xp, skills: model.skills, equipment: model.equipment, main: model.main, extra: model.extra };
     const payload = buildCharacter(c);
     parseCharacter(payload, isItem, isSkill, ehEquipavel); // confere que o bloco novo é lido de volta
@@ -365,7 +365,7 @@ export default {
   async writeServidor(path, model) {
     const s = sessions.get(path);
     if (!s?.character) throw new Error(t('Cópia do servidor não aberta para edição'));
-    checkModel(model);
+    checkModel(model, s.character);
     const c = { ...s.character, level: model.level, xp: model.xp, skills: model.skills, equipment: model.equipment, main: model.main, extra: model.extra };
     const payload = buildCharacter(c);
     parseCharacter(payload, isItem, isSkill, ehEquipavel); // confere que o bloco novo é lido de volta

@@ -1,4 +1,4 @@
-JJ's Enshrouded Save editor 0.2.0 preview
+JJ's Enshrouded Save editor 0.2.1
 Author and publisher: Jonaex LTD
 Nexus: https://www.nexusmods.com/enshrouded/mods/249
 

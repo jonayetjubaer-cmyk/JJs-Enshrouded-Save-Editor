@@ -1,11 +1,14 @@
 # JJ edition changelog
 
-## Unreleased
+## 0.2.1 — 4 November 2026
+
+- Fix the read-only character reported in issue #4: an inventory entry missing from the item catalogue no longer blocks the whole character. Strictly validated inventories can preserve unrecognised entries unchanged while supported fields remain editable.
+- Keep unrecognised inventory items locked, with an explanation in English, Italian, French and German. Saving refuses changes, removal, movement or duplication of these entries; unknown flags and ambiguous layouts remain unsupported.
 
 - Open compact character saves with zero to three equipped pieces, using extra mask/header checks and rejecting ambiguous layouts. This fixes the newly created character supplied in issue #2.
 - Preserve the compact inventory header when removing the last equipped piece.
 - Label the skill-point total as a validation-only budget and explain that it does not grant points in the game. Reject invalid stored budgets.
-- Add short/empty equipment layout and skill-budget regression tests. The reported in-game skill reset remains under investigation; no new Nexus package has been released.
+- Add short/empty equipment layout and skill-budget regression tests. The reported in-game skill reset remains under investigation; this release does not claim to fix the game rejecting skill allocations.
 
 ## 0.2.0 — 29 October 2026
 
