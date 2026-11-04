@@ -84,6 +84,27 @@ function parseCharacter(p, isItem, isSkill, ehEquipavel = null) {
   // trecho varia muito de save para save (medido: de 4 a mais de 64 bytes), então procuramos até
   // o fim do bloco e confiamos na conferência de que todas as pilhas depois do cabeçalho são lidas.
   const findInventory = (from) => {
+    // Catalogue misses must not make an otherwise anchored inventory unreadable. Only
+    // accept unknown IDs at the two observed immediate header positions, with ordered,
+    // bounded slots and a majority of known entries. Equipment still requires known IDs.
+    // Unknown flag bits/truncated records are never accepted.
+    for (const prefix of [0, 2]) {
+      const h = from + prefix;
+      if (p[h] !== 5 || p[h + 2] > 8 || h + 4 > p.length) continue;
+      const mc = p[h + 1], ec = p[h + 3], groups = p[h + 2];
+      if (mc > 40 || ec > groups * 8) continue;
+      let q = h + 4, known = 0, unknown = 0, ok = true;
+      for (const [count, capacity] of [[mc, 40], [ec, groups * 8]]) {
+        let previous = -1;
+        for (let k = 0; k < count && ok; k++) {
+          const e = readEntry(p, q, id => id !== 0);
+          if (!e || e.slot <= previous || e.slot >= capacity) { ok = false; break; }
+          previous = e.slot; q = e._end;
+          if (isItem(e.itemId)) known++; else unknown++;
+        }
+      }
+      if (ok && unknown > 0 && known > unknown) return { invStart: h + 4, mainCount: mc, extraCount: ec, unknown: true };
+    }
     for (let s = from + 4; s < p.length; s++) {
       // 05 <qtd principal> <grupos do contêiner extra> <qtd extra>; sem mochila vestida os grupos são 0
       if (p[s - 4] !== 0x05 || p[s - 2] > 8) continue;
@@ -132,13 +153,16 @@ function parseCharacter(p, isItem, isSkill, ehEquipavel = null) {
   if (!candidatos.length) throw new Error('Equipamento/inventário não encontrado no save');
   // Preserve existing dense-list selection. Short/empty lists must be unambiguous.
   const dense = candidatos.filter((c) => c.equipment.length >= DENSE_EQUIP_MIN);
+  // Ignore empty-list lookalikes inside the free-slot prefix when a dense anchor exists.
+  const anchors = dense.length ? dense : candidatos;
+  if (anchors.some(c => c.inv.unknown) && anchors.length !== 1) throw new Error('Equipamento/inventário ambíguo no save');
   if (!dense.length && candidatos.length !== 1) throw new Error('Equipamento/inventário ambíguo no save');
   const { equipStart, equipment, inv, mask, free, equipEnd } = dense[0] || candidatos[0];
   const { invStart, mainCount, extraCount } = inv;
   const main = [], extra = [];
   let q = invStart;
   for (let k = 0; k < mainCount + extraCount; k++) {
-    const e = readEntry(p, q, isItem);
+    const e = readEntry(p, q, inv.unknown ? id => id !== 0 : isItem);
     (k < mainCount ? main : extra).push(e);
     q = e._end;
   }
@@ -159,6 +183,22 @@ function parseCharacter(p, isItem, isSkill, ehEquipavel = null) {
       tail: Buffer.from(p.subarray(q)),
     },
   };
+}
+
+// Only original unknown inventory entries may pass through a save. They are immutable,
+// including their container, slot, quantity and every serialized optional field.
+function unknownItemsUnchanged(original, next, isItem) {
+  for (const container of ['equipment', 'main', 'extra']) {
+    const before = original[container].filter(e => !isItem(e.itemId));
+    const after = next[container].filter(e => !isItem(e.itemId));
+    if (before.length !== after.length) return false;
+    for (const e of before) {
+      const matches = after.filter(n => n.slot === e.slot);
+      if (matches.length !== 1 || !writeEntry(matches[0]).equals(writeEntry(e))) return false;
+      if (next[container].filter(n => n.slot === e.slot).length !== 1) return false;
+    }
+  }
+  return true;
 }
 
 /** Posições dos bits acesos, em ordem crescente. */
@@ -216,4 +256,4 @@ function buildCharacter(c) {
   ]);
 }
 
-export { parseCharacter, buildCharacter, EQUIP_MAX };
+export { parseCharacter, buildCharacter, unknownItemsUnchanged, EQUIP_MAX };

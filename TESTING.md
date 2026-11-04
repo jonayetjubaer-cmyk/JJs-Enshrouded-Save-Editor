@@ -93,3 +93,10 @@ The initial 0.1.0 Windows application launched and discovered the local characte
 - The JJ icon images are embedded in the executable; the full MIT notice is embedded in About & credits.
 - Microsoft Defender custom scan of the final executable found no threats. No antivirus settings were changed.
 - `release/JJs-Enshrouded-Save-Editor-0.1.1.zip` contains the executable, LICENSE, CREDITS.md, and SHA256SUMS.txt.
+## 0.2.1 read-only save fix — 4 November 2026
+
+- Reproduced issue #4 with both attached characters. The level-50 character contained an inventory ID absent from the bundled catalogue; the other character opened normally.
+- Both supplied character payloads now rebuild byte-for-byte identically without edits. In-memory XP and recognised inventory quantity edits parse back correctly, preserve the unrecognised entry, and preserve every unrelated raw container block. Original attachments remain unchanged and are not committed.
+- Rechecked all three original issue #2 samples with the same preservation checks.
+- Added synthetic coverage for unrecognised inventory IDs in main/extra containers and compact/prefixed layouts; invalid flags, unordered/duplicate slots, unanchored headers and largely unknown inventories remain refused. Unknown entry changes, deletion, creation, duplication and movement fail save validation.
+- 39 JJ regression tests, all upstream data/serializer checks and all three native backup/write/restore tests pass. The Windows x64 production build and ZIP packaging succeed. These are parser/writer checks; an edited affected character has not been loaded into Enshrouded.

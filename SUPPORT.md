@@ -28,3 +28,8 @@ The level-only writer check has passed against a local save, preserving every un
 The Skills tab's total is a validation budget. Enter the number of points your game actually grants (spent plus unspent). Changing that value only updates the editor's checks; it does not write an earned-point balance into the game. Spending more than the game allows can cause it to refund/reset the skill tree on loading.
 
 For a skill reset or an edit that does not persist, include the exact node/rank changes, the budget you entered and a screenshot of the game's spent/unspent total. The most useful comparison is the character's save before editing, immediately after saving in the editor, and after loading/saving in the game. Keep each version in a separate, clearly named folder. A character's server history is useful context, but has not been confirmed as the cause of these reports.
+## Read-only characters in 0.2.1
+
+Version 0.2.1 fixes the catalogue-miss cause reproduced from issue #4. An unrecognised inventory item can be preserved unchanged while supported fields remain editable, when the surrounding save layout passes strict checks. The unknown item itself stays locked; edit or remove it in the game first. This does not identify server visits as the cause and does not bypass Windows file permissions.
+
+If a character still opens read-only, include the exact message below the notice and the editor version with your report. Unknown skills, unknown item flag formats, unrecognised equipment and ambiguous layouts may still need separate support. Attach the affected character in a ZIP if you are comfortable sharing it publicly.

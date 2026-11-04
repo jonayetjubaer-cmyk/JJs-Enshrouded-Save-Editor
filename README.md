@@ -1,6 +1,6 @@
 # JJ's Enshrouded Save editor
 
-Windows save editor by **Jonaex LTD**. Version **0.2.0**.
+Windows save editor by **Jonaex LTD**. Version **0.2.1**.
 
 [Download on Nexus Mods](https://www.nexusmods.com/enshrouded/mods/249?tab=files) | [Report a bug](https://github.com/jonayetjubaer-cmyk/JJs-Enshrouded-Save-Editor/issues/new?template=bug_report.yml) | [Upload a save for support](SUPPORT.md)
 
