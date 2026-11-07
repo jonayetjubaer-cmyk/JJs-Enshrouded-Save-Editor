@@ -410,5 +410,22 @@
   "Ambiguous equipment/inventory layout in this save.": "La structure de l’équipement et de l’inventaire de cette sauvegarde est ambiguë.",
   "Unknown inventory items must stay unchanged. Edit or remove them in the game first.": "Les objets inconnus de l’inventaire doivent rester inchangés. Modifiez-les ou retirez-les d’abord dans le jeu.",
   "Unknown item #{v0}": "Objet inconnu nº {v0}",
-  "This item is not in the catalogue. It will be preserved unchanged when you save. Edit or remove it in the game first.": "Cet objet ne figure pas dans le catalogue. Il sera conservé sans modification lors de l’enregistrement. Modifiez-le ou retirez-le d’abord dans le jeu."
+  "This item is not in the catalogue. It will be preserved unchanged when you save. Edit or remove it in the game first.": "Cet objet ne figure pas dans le catalogue. Il sera conservé sans modification lors de l’enregistrement. Modifiez-le ou retirez-le d’abord dans le jeu.",
+  "There are not enough free slots for the selected items.": "Il n’y a pas assez d’emplacements libres pour les objets sélectionnés.",
+  "Zoom out": "Zoom arrière",
+  "Zoom in": "Zoom avant",
+  "Fit tree": "Afficher tout l’arbre",
+  "Drag the background to pan. Select a node to change its rank.": "Faites glisser le fond pour vous déplacer. Sélectionnez un nœud pour modifier son rang.",
+  "Interactive skill tree": "Arbre de compétences interactif",
+  "Add items from catalog": "Ajouter des objets du catalogue",
+  "Item catalog": "Catalogue d’objets",
+  "Selected only": "Sélection uniquement",
+  "Select a row to see a larger preview.": "Sélectionnez une ligne pour agrandir l’aperçu.",
+  "{v0} selected · {v1} free slots": "{v0} sélectionnés · {v1} emplacements libres",
+  "Clear selection": "Effacer la sélection",
+  "Add selected": "Ajouter la sélection",
+  "Added {v0} item type to pending changes.": "{v0} type d’objet ajouté aux modifications en attente.",
+  "Added {v0} item types to pending changes.": "{v0} types d’objets ajoutés aux modifications en attente.",
+  "Skill list": "Liste des compétences",
+  "Skill tree": "Arbre de compétences"
 }

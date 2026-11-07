@@ -1,6 +1,23 @@
 import { t, localeAtual } from './i18n.js';
 import { entryAt, replaceSlots } from '../shared/inventory.mjs';
 
+export function catalogFreeSlots(model, layout, catalog) {
+  const occupied = new Set(['main', 'extra'].flatMap(container =>
+    model[container].filter(e => e.count > 0 || !Object.hasOwn(catalog, e.itemId)).map(e => `${container}:${e.slot}`)));
+  return layout.all.filter(key => !occupied.has(key));
+}
+
+export function addCatalogItems(model, layout, selection, catalog, makeEntry) {
+  const free = catalogFreeSlots(model, layout, catalog);
+  if (selection.size > free.length) throw new Error(t('There are not enough free slots for the selected items.'));
+  const changes = [...selection].map(([id, quantity], i) => {
+    if (!Object.hasOwn(catalog, id)) throw new Error(t('Item desconhecido: {id}', { id }));
+    const key = free[i];
+    return [key, makeEntry(id, Number(key.split(':')[1]), quantity, undefined, model.level)];
+  });
+  return { model: changes.length ? replaceSlots(model, changes) : model, keys: changes.map(([key]) => key) };
+}
+
 export function duplicateItem(model, key, layout) {
   const entry = entryAt(model, key);
   const target = layout.all.find((slot) => !entryAt(model, slot));

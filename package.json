@@ -1,6 +1,6 @@
 {
   "name": "jjs-enshrouded-save-editor",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "JJ's Enshrouded Save editor — compact desktop edition based on Nicolas Ferreira's MIT-licensed editor.",
   "main": "electron/main.cjs",
   "private": true,

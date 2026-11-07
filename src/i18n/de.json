@@ -410,5 +410,22 @@
   "Ambiguous equipment/inventory layout in this save.": "Die Anordnung von Ausrüstung und Inventar in diesem Spielstand ist nicht eindeutig.",
   "Unknown inventory items must stay unchanged. Edit or remove them in the game first.": "Unbekannte Inventargegenstände müssen unverändert bleiben. Bearbeite oder entferne sie zuerst im Spiel.",
   "Unknown item #{v0}": "Unbekannter Gegenstand #{v0}",
-  "This item is not in the catalogue. It will be preserved unchanged when you save. Edit or remove it in the game first.": "Dieser Gegenstand ist nicht im Katalog enthalten. Er bleibt beim Speichern unverändert. Bearbeite oder entferne ihn zuerst im Spiel."
+  "This item is not in the catalogue. It will be preserved unchanged when you save. Edit or remove it in the game first.": "Dieser Gegenstand ist nicht im Katalog enthalten. Er bleibt beim Speichern unverändert. Bearbeite oder entferne ihn zuerst im Spiel.",
+  "There are not enough free slots for the selected items.": "Für die ausgewählten Gegenstände sind nicht genug Plätze frei.",
+  "Zoom out": "Verkleinern",
+  "Zoom in": "Vergrößern",
+  "Fit tree": "Ganzen Baum anzeigen",
+  "Drag the background to pan. Select a node to change its rank.": "Ziehe den Hintergrund, um die Ansicht zu verschieben. Wähle einen Knoten, um seinen Rang zu ändern.",
+  "Interactive skill tree": "Interaktiver Fertigkeitenbaum",
+  "Add items from catalog": "Gegenstände aus dem Katalog hinzufügen",
+  "Item catalog": "Gegenstandskatalog",
+  "Selected only": "Nur ausgewählte",
+  "Select a row to see a larger preview.": "Wähle eine Zeile für eine größere Vorschau.",
+  "{v0} selected · {v1} free slots": "{v0} ausgewählt · {v1} freie Plätze",
+  "Clear selection": "Auswahl aufheben",
+  "Add selected": "Auswahl hinzufügen",
+  "Added {v0} item type to pending changes.": "{v0} Gegenstandstyp zu den ausstehenden Änderungen hinzugefügt.",
+  "Added {v0} item types to pending changes.": "{v0} Gegenstandstypen zu den ausstehenden Änderungen hinzugefügt.",
+  "Skill list": "Fertigkeitenliste",
+  "Skill tree": "Fertigkeitenbaum"
 }

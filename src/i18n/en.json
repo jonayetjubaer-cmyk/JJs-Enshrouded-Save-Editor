@@ -256,5 +256,22 @@
   "Braços (visual)": "Arms (vanity)",
   "Pernas (visual)": "Legs (vanity)",
   "Pés (visual)": "Feet (vanity)",
-  "O jogo soma ainda os nós que dependem do nível da Chama e os bônus do equipamento; nenhum dos dois está no save do personagem.": "The game also adds the nodes that scale with your Flame level and the bonuses from your gear; neither is stored in the character save."
+  "O jogo soma ainda os nós que dependem do nível da Chama e os bônus do equipamento; nenhum dos dois está no save do personagem.": "The game also adds the nodes that scale with your Flame level and the bonuses from your gear; neither is stored in the character save.",
+  "Não há espaços livres suficientes para os itens selecionados.": "There are not enough free slots for the selected items.",
+  "Diminuir zoom": "Zoom out",
+  "Aumentar zoom": "Zoom in",
+  "Mostrar árvore inteira": "Fit tree",
+  "Arraste o fundo para mover a vista. Selecione um nó para mudar seu nível.": "Drag the background to pan. Select a node to change its rank.",
+  "Árvore de habilidades interativa": "Interactive skill tree",
+  "Adicionar itens do catálogo": "Add items from catalog",
+  "Catálogo de itens": "Item catalog",
+  "Somente selecionados": "Selected only",
+  "Selecione uma linha para ver uma prévia maior.": "Select a row to see a larger preview.",
+  "{v0} selecionados · {v1} espaços livres": "{v0} selected · {v1} free slots",
+  "Limpar seleção": "Clear selection",
+  "Adicionar selecionados": "Add selected",
+  "{v0} tipo de item adicionado às alterações pendentes.": "Added {v0} item type to pending changes.",
+  "{v0} tipos de item adicionados às alterações pendentes.": "Added {v0} item types to pending changes.",
+  "Lista de habilidades": "Skill list",
+  "Árvore de habilidades": "Skill tree"
 }

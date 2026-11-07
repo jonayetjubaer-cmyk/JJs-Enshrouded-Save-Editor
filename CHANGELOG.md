@@ -1,5 +1,12 @@
 # JJ edition changelog
 
+## 0.2.2 — 7 November 2026
+
+- Check multiple catalog items, set quantities individually, and add them together as one undoable change. Selection survives searches and pages, and the catalog stays open after adding.
+- Browse the item catalog without opening a save. Hover over item icons for an enlarged preview or select a row for details.
+- Switch between the skills list and a pan-and-zoom skill tree. Both views share rank edits, Undo and save validation.
+- Added the Jonaex LTD Discord invitation to the project description and release instructions.
+
 ## 0.2.1 — 4 November 2026
 
 - Fix the read-only character reported in issue #4: an inventory entry missing from the item catalogue no longer blocks the whole character. Strictly validated inventories can preserve unrecognised entries unchanged while supported fields remain editable.

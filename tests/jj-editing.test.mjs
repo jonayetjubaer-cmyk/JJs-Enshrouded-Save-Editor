@@ -2,13 +2,38 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { buildCharacter, parseCharacter } from '../shared/character.mjs';
-import { duplicateItem, moveItem, removeEquipment, setUpgrades, readSocket, writeSocket, equipmentBits, compareRows } from '../src/editor-model.mjs';
+import { addCatalogItems, catalogFreeSlots, duplicateItem, moveItem, removeEquipment, setUpgrades, readSocket, writeSocket, equipmentBits, compareRows } from '../src/editor-model.mjs';
 
 const sample = () => ({ name: 'Fixture', level: 35, equipMask: (1 << 5) | (1 << 15),
   equipment: [{ slot: 0, itemId: 10, count: 1 }, { slot: 1, itemId: 20, count: 1 }],
   main: [{ slot: 0, itemId: 30, count: 2, level: 35, upgrades: 3, maxUpgrades: 5, socket: 'c2be5cda37', unknown: 'preserve' }],
   extra: [{ slot: 0, itemId: 40, count: 11 }], skills: [{ id: 50, level: 1 }], knowledge: [{ id: 60, value: 7 }] });
 const layout = { all: ['main:0', 'main:1', 'extra:0', 'extra:1'] };
+
+test('a batch fills distinct free slots across containers and preserves existing entries', () => {
+  const original = sample(), snapshot = structuredClone(original);
+  const catalog = { 30: {}, 40: {}, 100: { maxStack: 5 }, 200: { maxStack: 1 } };
+  const make = (itemId, slot, quantity, _template, level) => ({ itemId, slot, count: Math.min(quantity, catalog[itemId].maxStack), level });
+  const result = addCatalogItems(original, layout, new Map([[100, 3], [200, 1]]), catalog, make);
+  assert.deepEqual(result.keys, ['main:1', 'extra:1']);
+  assert.deepEqual(result.model.main, [original.main[0], { itemId: 100, slot: 1, count: 3, level: 35 }]);
+  assert.deepEqual(result.model.extra, [original.extra[0], { itemId: 200, slot: 1, count: 1, level: 35 }]);
+  assert.deepEqual(result.model.skills, original.skills);
+  assert.deepEqual(original, snapshot);
+});
+
+test('a batch never overwrites locked entries or partially adds items when space runs out', () => {
+  const original = sample(), locked = { itemId: 999, slot: 1, count: 0, level: 1 };
+  original.main.push(locked);
+  const snapshot = structuredClone(original), catalog = { 30: {}, 40: {}, 100: {}, 200: {} };
+  const make = (itemId, slot, count) => ({ itemId, slot, count });
+  assert.deepEqual(catalogFreeSlots(original, layout, catalog), ['extra:1']);
+  assert.throws(() => addCatalogItems(original, layout, new Map([[100, 2], [200, 1]]), catalog, make), /not enough free slots/);
+  assert.deepEqual(original, snapshot);
+  const result = addCatalogItems(original, layout, new Map([[100, 2]]), catalog, make);
+  assert.deepEqual(result.model.main, original.main);
+  assert.deepEqual(result.model.extra.at(-1), { itemId: 100, slot: 1, count: 2 });
+});
 
 test('duplicating an inventory item preserves its socket, extras and both containers', () => {
   const before = sample(), snapshot = structuredClone(before);
