@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import DesktopSkillTree from './DesktopSkillTree.jsx';
 import { items, skills, itemName, skillName, descricaoDe, newEntry, nomeConhecimento, ATRIBUTOS, atributosDaArvore } from './gamedata.js';
 import capacities from '../data/backpack-capacities.json';
 import knowledgeMap from '../data/conhecimento.json';
 import { inventoryLayout, entryAt, replaceSlots } from '../shared/inventory.mjs';
 import { estadoTexto } from '../shared/knowledge.mjs';
-import { duplicateItem, moveItem, removeEquipment, setUpgrades, readSocket, writeSocket, equipmentBits, compareRows } from './editor-model.mjs';
+import { addCatalogItems, catalogFreeSlots, duplicateItem, moveItem, removeEquipment, setUpgrades, readSocket, writeSocket, equipmentBits, compareRows } from './editor-model.mjs';
 import { checkTree, knownTotal, pointsUsed, totalKey } from './treecheck.js';
 import { itemIcon } from './ui.js';
 import { api, IS_PREVIEW } from './platform.js';
@@ -37,7 +39,7 @@ export function NumberField({ label, value, onChange, min = 0, max = 65535, ...p
   }} {...props} /></label>;
 }
 
-export function Dialog({ title, children, onClose, wide = false }) {
+export function Dialog({ title, children, onClose, wide = false, className = '' }) {
   const root = useRef(null), close = useRef(onClose);
   close.current = onClose;
   useEffect(() => {
@@ -46,7 +48,7 @@ export function Dialog({ title, children, onClose, wide = false }) {
     const handler = (e) => { if (e.key === 'Escape' && isTop()) { e.preventDefault(); close.current(); } };
     window.addEventListener('keydown', handler);
     const dialog = root.current;
-    dialog?.querySelector('button,input,select')?.focus();
+    (dialog?.querySelector('[data-dialog-focus]') || dialog?.querySelector('button,input,select'))?.focus();
     const trap = (e) => {
       if (e.key !== 'Tab' || !isTop()) return;
       const all = [...(dialog?.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]') ?? [])];
@@ -57,7 +59,7 @@ export function Dialog({ title, children, onClose, wide = false }) {
     dialog?.addEventListener('keydown', trap);
     return () => { window.removeEventListener('keydown', handler); dialog?.removeEventListener('keydown', trap); prev?.focus(); };
   }, []);
-  return <div className="jj-overlay"><section ref={root} className={`jj-dialog ${wide ? 'wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
+  return <div className="jj-overlay"><section ref={root} className={`jj-dialog ${wide ? 'wide' : ''} ${className}`} role="dialog" aria-modal="true" aria-label={title}>
     <header><h2>{t(title)}</h2><button className="jj-icon-button" aria-label={t("Close dialog")} onClick={onClose}><Icon name="close" /></button></header>{children}
   </section></div>;
 }
@@ -66,7 +68,7 @@ export function DataTable({ columns, rows, selected, onSelect, sort, onSort, row
   return <div className="jj-table-scroll"><table className="jj-table"><thead><tr>{columns.map((c) => <th key={c.key} style={c.width ? { width: c.width } : undefined} aria-sort={sort?.key === c.key ? sort.direction === 'asc' ? 'ascending' : 'descending' : undefined}>
     {onSort && !c.noSort ? <button onClick={() => onSort(c.key)}>{t(c.label)}<span>{sort?.key === c.key ? sort.direction === 'asc' ? '▴' : '▾' : ''}</span></button> : c.label}
   </th>)}</tr></thead><tbody>{rows.map((r) => <tr key={rowKey(r)} className={selected === rowKey(r) ? 'selected' : ''} aria-selected={onSelect ? selected === rowKey(r) : undefined} tabIndex={onSelect ? 0 : undefined}
-    onClick={() => onSelect?.(r)} onDoubleClick={() => onDoubleClick?.(r)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(r); } }}>
+    onClick={() => onSelect?.(r)} onDoubleClick={() => onDoubleClick?.(r)} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect?.(r); } }}>
     {columns.map((c) => <td key={c.key}>{c.render ? c.render(r) : ['category', 'rarity', 'container', 'position', 'group', 'type', 'kind'].includes(c.key) ? t(r[c.key]) : r[c.key]}</td>)}
   </tr>)}</tbody></table>{!rows.length && <Empty title={empty}>{t("Try changing the search or filters.")}</Empty>}</div>;
 }
@@ -78,7 +80,34 @@ const RARITY = ['—', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 const EQUIPMENT = ['Head · vanity', 'Chest · vanity', 'Arms · vanity', 'Legs · vanity', 'Feet · vanity', 'Head', 'Chest', 'Arms', 'Legs', 'Feet', 'Ring 1', 'Ring 2', 'Shield', 'Grappling hook', 'Glider', 'Backpack'];
 const category = (id) => items[id]?.category || 'Unknown';
 const itemRarity = (entry) => entry?.maxUpgrades ?? ({ Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5 }[items[entry?.itemId]?.rarity] || 0);
-const itemCell = (r) => <span className="jj-item-name"><img src={itemIcon(r.entry.itemId)} alt="" loading="lazy" /><span>{r.name}</span></span>;
+function ItemPreview({ entry }) {
+  const icon = itemIcon(entry.itemId), rarity = itemRarity(entry);
+  return <div className="jj-item-preview">
+    {icon && <img src={icon} alt="" />}
+    <div><span className={`jj-rarity r${rarity}`}>{t(RARITY[rarity])}</span><h2>{itemName(entry.itemId)}</h2><span className="jj-muted">{t(category(entry.itemId))}</span></div>
+  </div>;
+}
+
+function ItemCell({ row }) {
+  const icon = itemIcon(row.entry.itemId);
+  const [anchor, setAnchor] = useState(null);
+  useEffect(() => {
+    if (!anchor) return;
+    const close = () => setAnchor(null);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => { window.removeEventListener('scroll', close, true); window.removeEventListener('resize', close); };
+  }, [anchor]);
+  return <span className="jj-item-name">
+    {icon && <img src={icon} alt="" loading="lazy" onPointerEnter={e => setAnchor(e.currentTarget.getBoundingClientRect())} onPointerLeave={() => setAnchor(null)} />}
+    <span>{row.name}</span>
+    {anchor && createPortal(<div className="jj-item-hover" aria-hidden="true" style={{
+      left: Math.max(8, Math.min(window.innerWidth - 248, anchor.right + 8)),
+      top: Math.max(8, Math.min(window.innerHeight - 232, anchor.top)),
+    }}><ItemPreview entry={row.entry} /></div>, document.body)}
+  </span>;
+}
+const itemCell = row => <ItemCell row={row} />;
 
 function ItemDetails({ entry, onChange, onRemove, onDuplicate, notice }) {
   if (!entry) return <aside className="jj-inspector"><Empty title={t("Select an item")}>{t("Choose a row to inspect or edit its properties.")}</Empty></aside>;
@@ -87,7 +116,7 @@ function ItemDetails({ entry, onChange, onRemove, onDuplicate, notice }) {
   const set = (key, value) => onChange({ ...entry, [key]: value });
   const socket = entry.socket !== undefined ? readSocket(entry.socket) : null;
   const gems = Object.keys(items).filter((id) => items[id].category === 'WeaponGem').map(Number).sort((a, b) => itemName(a).localeCompare(itemName(b)));
-  return <aside className="jj-inspector"><div className="jj-inspector-head"><img src={itemIcon(entry.itemId)} alt="" /><div><span className={`jj-rarity r${itemRarity(entry)}`}>{t(RARITY[itemRarity(entry)])}</span><h2>{itemName(entry.itemId)}</h2><span className="jj-muted">{t(category(entry.itemId))}</span></div></div>
+  return <aside className="jj-inspector"><ItemPreview entry={entry} />
     <div className="jj-properties">
       <NumberField label={t("Quantity")} value={entry.count} min={1} max={Math.max(item?.maxStack || 1, entry.count)} onChange={(v) => set('count', v)} />
       {entry.level !== undefined && <NumberField label={t("Item level")} value={entry.level} min={entry.upgrades ?? 0} max={255} onChange={(v) => set('level', v)} />}
@@ -112,19 +141,84 @@ function ItemDetails({ entry, onChange, onRemove, onDuplicate, notice }) {
   </aside>;
 }
 
-function AddItemDialog({ model, target, onAdd, onClose }) {
-  const [q, setQ] = useState(''), [cat, setCat] = useState('all'), [rar, setRar] = useState('all'), [selected, setSelected] = useState(null), [count, setCount] = useState(1), [page, setPage] = useState(0);
+export function CatalogDialog({ model, layout, onAdd, onClose, report }) {
+  const adding = Boolean(model && onAdd);
+  const [query, setQuery] = useState(''), [categoryFilter, setCategory] = useState('all'), [rarityFilter, setRarity] = useState('all');
+  const [inspected, inspect] = useState(null), [selection, setSelection] = useState(() => new Map());
+  const [selectedOnly, setSelectedOnly] = useState(false), [page, setPage] = useState(0);
+  const [added, setAdded] = useState(0), [error, setError] = useState('');
   const [sort, onSort] = useSort();
-  const catalog = useMemo(() => Object.entries(items).filter(([, i]) => !['Customization', 'ColorPalette'].includes(i.category) && (i.en || i.pt)).map(([id, i]) => ({ key: id, id: Number(id), name: itemName(id), category: i.category, rarity: i.rarity, maxStack: i.maxStack, entry: { itemId: Number(id) }, search: `${id} ${itemName(id)} ${i.en} ${i.pt} ${i.debug}`.toLowerCase() })), [idiomaAtual()]);
-  const rows = catalog.filter((r) => (cat === 'all' || r.category === cat) && (rar === 'all' || r.rarity === rar) && r.search.includes(q.toLowerCase())).sort((a, b) => compareRows(a, b, sort.key, sort.direction));
-  useEffect(() => setPage(0), [q, cat, rar, sort]);
-  const pick = (r) => { setSelected(r); setCount(Math.min(count, r.maxStack || 1)); };
-  return <Dialog title={t("Add item from catalog")} onClose={onClose} wide><div className="jj-filterbar">
-    <input autoFocus aria-label={t("Search item catalog")} placeholder={t("Search by name, item ID or internal name…")} value={q} onChange={(e) => setQ(e.target.value)} />
-    <select aria-label={t("Catalog category")} value={cat} onChange={(e) => setCat(e.target.value)}><option value="all">{t("All categories")}</option>{[...new Set(catalog.map((r) => r.category))].sort().map((c) => <option key={c} value={c}>{t(c)}</option>)}</select>
-    <select aria-label={t("Catalog rarity")} value={rar} onChange={(e) => setRar(e.target.value)}><option value="all">{t("All rarities")}</option>{RARITY.slice(1).map((r) => <option key={r} value={r}>{t(r)}</option>)}</select>
-  </div><DataTable rows={rows.slice(page * 80, (page + 1) * 80)} selected={selected?.key} onSelect={pick} sort={sort} onSort={onSort} columns={[{ key: 'name', label: t("Item"), render: itemCell }, { key: 'category', label: t("Category") }, { key: 'rarity', label: t("Rarity") }, { key: 'maxStack', label: t("Max stack"), width: 90 }]} />
-    <div className="jj-dialog-actions"><span className="jj-muted">{tn("{v0} item · page {v1} of {v2}", "{v0} items · page {v1} of {v2}", rows.length, {v0: (rows.length.toLocaleString(localeAtual())), v1: (page + 1), v2: (Math.max(1, Math.ceil(rows.length / 80)))})}</span><Button disabled={page === 0} onClick={() => setPage(page - 1)}>{t("Previous")}</Button><Button disabled={(page + 1) * 80 >= rows.length} onClick={() => setPage(page + 1)}>{t("Next")}</Button><span className="jj-spacer" /><NumberField label={t("Quantity")} value={count} min={1} max={selected?.maxStack || 1} onChange={setCount} /><Button primary icon="plus" disabled={!selected || !target} onClick={() => { onAdd(newEntry(selected.id, Number(target.split(':')[1]), count, undefined, model.level)); onClose(); }}>{t("Add item")}</Button><Button onClick={onClose}>{t("Cancel")}</Button></div>
+  const locale = idiomaAtual();
+  const catalog = useMemo(() => Object.entries(items)
+    .filter(([, item]) => !['Customization', 'ColorPalette'].includes(item.category) && (item.en || item.pt))
+    .map(([key, item]) => {
+      const id = Number(key), name = itemName(id);
+      return { key, id, name, category: item.category, rarity: item.rarity, maxStack: item.maxStack || 1, entry: { itemId: id },
+        search: `${key} ${name} ${item.en} ${item.pt} ${item.debug}`.toLowerCase() };
+    }), [locale]);
+  const checked = selectedOnly ? selection : null;
+  const rows = useMemo(() => catalog.filter(r => checked ? checked.has(r.id) :
+    (categoryFilter === 'all' || r.category === categoryFilter) && (rarityFilter === 'all' || r.rarity === rarityFilter) &&
+    r.search.includes(query.trim().toLowerCase())).sort((a, b) => compareRows(a, b, sort.key, sort.direction)),
+    [catalog, checked, categoryFilter, rarityFilter, query, sort]);
+  const pages = Math.max(1, Math.ceil(rows.length / 80)), currentPage = Math.min(page, pages - 1);
+  useEffect(() => setPage(0), [query, categoryFilter, rarityFilter, selectedOnly, sort]);
+  const picked = catalog.find(r => r.id === inspected);
+  const free = adding ? catalogFreeSlots(model, layout, items).length : 0;
+  const toggle = (row, checked) => {
+    inspect(row.id);
+    setSelection(old => {
+      const next = new Map(old);
+      if (checked) next.set(row.id, 1); else next.delete(row.id);
+      return next;
+    });
+    setError('');
+  };
+  const add = () => {
+    try {
+      const result = addCatalogItems(model, layout, selection, items, newEntry);
+      onAdd(result);
+      setAdded(result.keys.length);
+      setSelection(new Map());
+      setSelectedOnly(false);
+      setError('');
+    } catch (e) { setError(e.message); report?.(e); }
+  };
+  return <Dialog title={adding ? t('Add items from catalog') : t('Item catalog')} onClose={onClose} wide className="jj-catalog"><div className="jj-filterbar">
+    <input data-dialog-focus aria-label={t('Search item catalog')} placeholder={t('Search by name, item ID or internal name…')} value={query} onChange={e => setQuery(e.target.value)} disabled={selectedOnly} />
+    <select aria-label={t('Catalog category')} value={categoryFilter} onChange={e => setCategory(e.target.value)} disabled={selectedOnly}><option value="all">{t('All categories')}</option>{[...new Set(catalog.map(r => r.category))].sort().map(c => <option key={c} value={c}>{t(c)}</option>)}</select>
+    <select aria-label={t('Catalog rarity')} value={rarityFilter} onChange={e => setRarity(e.target.value)} disabled={selectedOnly}><option value="all">{t('All rarities')}</option>{RARITY.slice(1).map(r => <option key={r} value={r}>{t(r)}</option>)}</select>
+    {adding && <label className="jj-check"><input type="checkbox" checked={selectedOnly} onChange={e => setSelectedOnly(e.target.checked)} />{t('Selected only')}</label>}
+  </div>
+    <div className="jj-catalog-body">
+      <DataTable rows={rows.slice(currentPage * 80, (currentPage + 1) * 80)} selected={picked?.key} onSelect={r => inspect(r.id)} sort={sort} onSort={onSort}
+        columns={[
+          ...(adding ? [{ key: 'check', label: '', width: 36, noSort: true, render: r => <input type="checkbox" aria-label={t('Select {v0}', { v0: r.name })} checked={selection.has(r.id)} onClick={e => e.stopPropagation()} onChange={e => toggle(r, e.target.checked)} /> }] : []),
+          { key: 'name', label: t('Item'), render: itemCell }, { key: 'category', label: t('Category') }, { key: 'rarity', label: t('Rarity') }, { key: 'maxStack', label: t('Max stack'), width: 80 },
+        ]} />
+      <aside className="jj-inspector">{picked ? <>
+        <ItemPreview entry={picked.entry} />
+        {adding && <NumberField label={t('Quantity')} min={1} max={picked.maxStack} value={selection.get(picked.id) ?? 1} disabled={!selection.has(picked.id)}
+          onChange={quantity => setSelection(old => new Map(old).set(picked.id, quantity))} />}
+        <p className="jj-note">{t('Max stack')}: {picked.maxStack} · #{picked.id}</p>
+        <ItemStats entry={newEntry(picked.id, 0, 1, undefined, model?.level)} />
+      </> : <Empty title={t('Select an item')}>{t('Select a row to see a larger preview.')}</Empty>}</aside>
+    </div>
+    <div className="jj-dialog-actions">
+      <span className="jj-muted">{tn('{v0} item · page {v1} of {v2}', '{v0} items · page {v1} of {v2}', rows.length, { v0: rows.length.toLocaleString(localeAtual()), v1: currentPage + 1, v2: pages })}</span>
+      <Button disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{t('Previous')}</Button>
+      <Button disabled={currentPage + 1 >= pages} onClick={() => setPage(currentPage + 1)}>{t('Next')}</Button>
+      <span className="jj-spacer" />
+      {adding && <>
+        <span className="jj-muted" aria-live="polite">{t('{v0} selected · {v1} free slots', { v0: selection.size, v1: free })}</span>
+        <Button disabled={!selection.size} onClick={() => { setSelection(new Map()); setSelectedOnly(false); setError(''); }}>{t('Clear selection')}</Button>
+        <Button primary icon="plus" disabled={!selection.size || selection.size > free} onClick={add}>{t('Add selected')}</Button>
+      </>}
+      <Button onClick={onClose}>{t('Close')}</Button>
+    </div>
+    {adding && (error || selection.size > free || added > 0) && <p className="jj-catalog-status" role="status">
+      {error || (selection.size > free ? t('There are not enough free slots for the selected items.') : tn('Added {v0} item type to pending changes.', 'Added {v0} item types to pending changes.', added))}
+    </p>}
   </Dialog>;
 }
 
@@ -137,13 +231,13 @@ export function InventoryPanel({ model, onChange, ask, report, equipment = false
     : ['main', 'extra'].flatMap((c) => model[c].filter((e) => e.count > 0).map((entry) => ({ key: `${c}:${entry.slot}`, entry, name: itemName(entry.itemId), container: c === 'extra' ? 'Backpack' : entry.slot >= 16 && entry.slot < 24 ? 'ALT bar' : entry.slot >= 24 && entry.slot < 32 ? 'Action bar' : 'Inventory', slotNumber: entry.slot + 1, category: category(entry.itemId), rarity: itemRarity(entry), count: entry.count, level: entry.level ?? '—' })));
   const visible = rows.filter((r) => `${r.name} ${r.entry.itemId} ${items[r.entry.itemId]?.debug}`.toLowerCase().includes(filter.toLowerCase()) && (cat === 'all' || r.category === cat) && (container === 'all' || r.container === container)).sort((a, b) => compareRows(a, b, sort.key, sort.direction));
   const picked = rows.find((r) => r.key === selected);
-  const free = layout.all.find((key) => !entryAt(model, key));
+  const free = catalogFreeSlots(model, layout, items)[0];
   const update = (entry) => onChange(equipment ? { ...model, equipment: model.equipment.map((e) => e.slot === entry.slot ? entry : e) } : replaceSlots(model, [[selected, entry]]));
   const remove = async () => {
     if (!picked || !await ask(t("Remove item?"), t("Remove {v0} from this character? You can undo this before saving.", {v0: picked.name}), t("Remove"))) return;
     try { onChange(equipment ? removeEquipment(model, picked.entry.slot, items) : replaceSlots(model, [[selected, null]])); setSelected(null); } catch (e) { report(e); }
   };
-  const duplicate = () => { try { const result = duplicateItem(model, selected, layout); onChange(result.model); setSelected(result.key); } catch (e) { report(e); } };
+  const duplicate = () => { try { const result = duplicateItem(model, selected, { all: catalogFreeSlots(model, layout, items) }); onChange(result.model); setSelected(result.key); } catch (e) { report(e); } };
   return <><div className="jj-panel-toolbar"><div><h2>{equipment ? t("Equipped items") : t("Inventory")}</h2><span className="jj-muted">{equipment ? tn("{v0} equipped piece", "{v0} equipped pieces", rows.length, {v0: rows.length}) : t("{v0} occupied / {v1} available slots", {v0: rows.length, v1: layout.all.length})}</span></div><span className="jj-spacer" />{!equipment && <Button primary icon="plus" onClick={() => setAdd(true)} disabled={!free}>{t("Add item…")}</Button>}</div>
     <div className="jj-filterbar"><span className="jj-search"><Icon name="search" /><input aria-label={t("Filter inventory")} value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t("Filter by name or ID…")} /></span>
       <select aria-label={t("Item category")} value={cat} onChange={(e) => setCat(e.target.value)}><option value="all">{t("All categories")}</option>{[...new Set(rows.map((r) => r.category))].sort().map((c) => <option key={c} value={c}>{t(c)}</option>)}</select>
@@ -154,7 +248,7 @@ export function InventoryPanel({ model, onChange, ask, report, equipment = false
       { key: 'count', label: t("Count"), width: 70 }, { key: 'level', label: t("Level"), width: 60 }, { key: 'rarity', label: t("Rarity"), width: 100, render: (r) => <span className={`jj-rarity r${r.rarity}`}>{t(RARITY[r.rarity])}</span> },
     ]} />{!equipment && <div className="jj-table-footer"><label>{t("Move selected to")} <select aria-label={t("Move item destination")} value={moveTo} onChange={(e) => setMoveTo(e.target.value)}><option value="">{t("Choose slot…")}</option>{layout.all.filter((k) => k !== selected).map((key) => <option key={key} value={key}>{key.startsWith('extra') ? t("Backpack") : t("Main")} · {Number(key.split(':')[1]) + 1}{entryAt(model, key) ? t(" (swap)") : t(" (empty)")}</option>)}</select></label><Button icon="arrow" disabled={!picked || !moveTo || !items[picked.entry.itemId] || (entryAt(model, moveTo) && !items[entryAt(model, moveTo).itemId])} onClick={() => { try { onChange(moveItem(model, selected, moveTo, layout)); setSelected(moveTo); setMoveTo(''); } catch (e) { report(e); } }}>{t("Move / swap")}</Button></div>}</div>
       <ItemDetails entry={picked?.entry} onChange={update} onRemove={picked ? remove : null} onDuplicate={!equipment && free && picked ? duplicate : null} notice={equipment ? t("Equip new pieces in the game. This editor can change or remove the pieces already equipped.") : null} />
-    </div>{add && <AddItemDialog model={model} target={free} onAdd={(entry) => { onChange(replaceSlots(model, [[free, entry]])); setSelected(free); }} onClose={() => setAdd(false)} />}</>;
+    </div>{add && <CatalogDialog model={model} layout={layout} onAdd={({ model: next, keys }) => { onChange(next); setSelected(keys[0] ?? null); }} onClose={() => setAdd(false)} report={report} />}</>;
 }
 
 export function CharacterPanel({ model, onChange }) {
@@ -165,6 +259,7 @@ export function CharacterPanel({ model, onChange }) {
 }
 
 export function SkillsPanel({ model, onChange, ask }) {
+  const [view, setView] = useState('list');
   const [q, setQ] = useState(''), [group, setGroup] = useState('all'), [learned, setLearned] = useState(false), [selected, setSelected] = useState(null), [total, setTotal] = useState(() => knownTotal(model));
   const [sort, onSort] = useSort();
   const levels = new Map(model.skills.map((s) => [s.id, s.level]));
@@ -172,12 +267,21 @@ export function SkillsPanel({ model, onChange, ask }) {
   const rows = all.filter((r) => `${r.name} ${r.id}`.toLowerCase().includes(q.toLowerCase()) && (group === 'all' || r.group === group) && (!learned || r.rank > 0)).sort((a, b) => compareRows(a, b, sort.key, sort.direction));
   const picked = all.find((r) => r.key === selected), validation = checkTree(model), used = pointsUsed(model.skills);
   const setRank = (rank) => {
-    const list = model.skills.some((s) => s.id === picked.id) ? model.skills.map((s) => s.id === picked.id ? { ...s, level: rank } : s) : [...model.skills, { id: picked.id, level: rank }];
+    if (!picked || rank === picked.rank) return;
+    const list = model.skills.some(s => s.id === picked.id)
+      ? model.skills.map(s => s.id === picked.id ? { ...s, level: rank } : s)
+      : [...model.skills, { id: picked.id, level: rank }];
     onChange({ ...model, skills: list });
   };
   return <><div className="jj-panel-toolbar"><div><h2>{t("Skills")}</h2><span className="jj-muted">{tn("{v0} point used{v1}", "{v0} points used{v1}", used, {v0: (used), v1: (total !== null ? tn(" · {v0} point available", " · {v0} available", total - used, {v0: total - used}) : t(" · total not set"))})}</span></div><span className="jj-spacer" /><label className="jj-inline-label">{t("In-game total (validation only)")} <input aria-label={t("Skill-point validation budget")} type="number" min="0" value={total ?? ''} placeholder={t("Unknown")} onChange={(e) => { const v = e.target.value === '' ? null : Math.max(0, Math.floor(Number(e.target.value)) || 0); setTotal(v); try { v === null ? localStorage.removeItem(totalKey(model)) : localStorage.setItem(totalKey(model), String(v)); } catch {} }} /></label><Button danger onClick={async () => { if (await ask(t("Refund all skills?"), t("All learned skill ranks will be set to zero. The change is reversible with Undo before saving."), t("Refund all"))) onChange({ ...model, skills: model.skills.map((s) => ({ ...s, level: 0 })) }); }}>{t("Refund all")}</Button></div>
-    <div className="jj-filterbar"><input aria-label={t("Filter skills")} placeholder={t("Search skills…")} value={q} onChange={(e) => setQ(e.target.value)} /><select aria-label={t("Skill class")} value={group} onChange={(e) => setGroup(e.target.value)}><option value="all">{t("All classes")}</option>{[...new Set(all.map((r) => r.group))].sort().map((g) => <option key={g} value={g}>{t(g)}</option>)}</select><label className="jj-check"><input type="checkbox" checked={learned} onChange={(e) => setLearned(e.target.checked)} />{t("Learned only")}</label></div>
-    <div className="jj-split"><DataTable rows={rows} selected={selected} onSelect={(r) => setSelected(r.key)} sort={sort} onSort={onSort} columns={[{ key: 'name', label: t("Skill") }, { key: 'group', label: t("Class"), width: 95 }, { key: 'type', label: t("Type"), width: 95 }, { key: 'cost', label: t("Cost"), width: 55 }, { key: 'rank', label: t("Rank"), width: 65, render: (r) => `${r.rank}/${r.maxRank}` }]} />
+    <div className="jj-filterbar">
+      <div className="jj-view-toggle">
+        <Button aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('Skill list')}</Button>
+        <Button aria-pressed={view === 'tree'} onClick={() => setView('tree')}>{t('Skill tree')}</Button>
+      </div>
+      {view === 'list' && <><input aria-label={t("Filter skills")} placeholder={t("Search skills…")} value={q} onChange={(e) => setQ(e.target.value)} /><select aria-label={t("Skill class")} value={group} onChange={(e) => setGroup(e.target.value)}><option value="all">{t("All classes")}</option>{[...new Set(all.map((r) => r.group))].sort().map((g) => <option key={g} value={g}>{t(g)}</option>)}</select><label className="jj-check"><input type="checkbox" checked={learned} onChange={(e) => setLearned(e.target.checked)} />{t("Learned only")}</label></>}
+    </div>
+    <div className="jj-split">{view === 'tree' ? <DesktopSkillTree levels={levels} selected={selected} onSelect={setSelected} /> : <DataTable rows={rows} selected={selected} onSelect={(r) => setSelected(r.key)} sort={sort} onSort={onSort} columns={[{ key: 'name', label: t("Skill") }, { key: 'group', label: t("Class"), width: 95 }, { key: 'type', label: t("Type"), width: 95 }, { key: 'cost', label: t("Cost"), width: 55 }, { key: 'rank', label: t("Rank"), width: 65, render: (r) => `${r.rank}/${r.maxRank}` }]} />}
       <aside className="jj-inspector">{picked ? <><span className="jj-eyebrow">{t(picked.group)} · {t(picked.type)}</span><h2>{picked.name}</h2><p className="jj-description">{descricaoDe(picked.node)}</p><NumberField label={t("Learned rank")} min={0} max={picked.maxRank} value={picked.rank} onChange={setRank} /><p className="jj-note">{tn("{v0} point per rank. Prerequisite paths and the point budget are checked before saving.", "{v0} points per rank. Prerequisite paths and the point budget are checked before saving.", picked.cost, {v0: (picked.cost)})}</p></> : <Empty icon="skills" title={t("Select a skill")}>{t("Inspect its description and change its learned rank.")}</Empty>}
         <div className="jj-stats-section"><h3>{t("Tree validation")}</h3>{validation.problems.length ? <ul className="jj-validation">{validation.problems.map((p) => <li key={p}>{p}</li>)}</ul> : <p className="jj-note success">{t("Connected paths and rank limits pass.")}</p>}<p className="jj-note">{t("The total above is only a validation budget. It is not saved to the game and does not grant extra skill points.")}</p><p className="jj-note">{t("Enter your actual earned total (spent + unspent). The game can reset a tree that exceeds its own point allowance.")}</p></div>
       </aside></div></>;

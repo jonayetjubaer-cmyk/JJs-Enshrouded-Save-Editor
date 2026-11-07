@@ -1,6 +1,6 @@
 # JJ's Enshrouded Save editor
 
-Windows save editor by **Jonaex LTD**. Version **0.2.1**.
+Windows save editor by **Jonaex LTD**. Version **0.2.2**.
 
 [Download on Nexus Mods](https://www.nexusmods.com/enshrouded/mods/249?tab=files) | [Report a bug](https://github.com/jonayetjubaer-cmyk/JJs-Enshrouded-Save-Editor/issues/new?template=bug_report.yml) | [Upload a save for support](SUPPORT.md)
 
@@ -9,6 +9,8 @@ Windows save editor by **Jonaex LTD**. Version **0.2.1**.
 - Compact desktop interface with a character sidebar and searchable, sortable tables.
 - Character, Inventory, Equipment, Skills, Knowledge and Server tabs.
 - Edit character level and experience, item quantities and levels, upgrades, gem sockets and learned skills.
+- Select and add several catalog items at once, inspect larger icons and item stats, and browse the catalog offline without opening a save.
+- Switch between the skills list and an interactive skill tree with zoom, pan and shared rank editing.
 - Undo, discard changes, automatic backups and backup restoration.
 - Full Italian, French and German interface translations, including official item, skill and stat text. English and the original Portuguese option are also available.
 - Choose a language before opening a save. The choice applies immediately and is remembered between launches.
@@ -23,6 +25,10 @@ Windows save editor by **Jonaex LTD**. Version **0.2.1**.
 4. Close Enshrouded before saving an edit. Keep an independent backup and test changes on a copy.
 
 This is a preview release. See [TESTING.md](TESTING.md) for verification results and limitations. The current download remains on Nexus; imported upstream Git tags are historical and are not JJ edition releases.
+
+## Join the community
+
+Found a bug, have a question, or just want to chat about the editor? You’re welcome to [**join the Jonaex LTD Discord**](https://discord.gg/w5qGfqm7UY).
 
 ## Bug reports and save uploads
 

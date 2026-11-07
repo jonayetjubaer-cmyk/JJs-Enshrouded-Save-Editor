@@ -107,9 +107,34 @@ svg { flex-shrink: 0; }
 .jj-table-footer select { max-width: 190px; font-size: 11px; }
 .jj-inspector { flex: 0 0 300px; width: 300px; border-left: 1px solid var(--border); background: var(--surface-alt); overflow: auto; padding: 18px 16px; }
 .jj-inspector > h2 { margin: 7px 0 15px; font-size: 17px; }
-.jj-inspector-head { display: flex; gap: 12px; padding-bottom: 17px; border-bottom: 1px solid var(--border); margin-bottom: 17px; }
-.jj-inspector-head > img { width: 56px; height: 56px; object-fit: contain; align-self: center; border: 1px solid var(--border); border-radius: 5px; background: var(--input); padding: 5px; }
-.jj-inspector-head h2 { margin: 4px 0; font-size: 15px; line-height: 1.4; }
+.jj-item-preview { display: grid; justify-items: center; gap: 10px; text-align: center; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.jj-item-preview > img { width: 116px; height: 116px; object-fit: contain; border: 1px solid var(--border); border-radius: 6px; background: var(--input); padding: 6px; }
+.jj-item-preview h2 { margin: 4px 0; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
+.jj-item-hover { position: fixed; z-index: 120; pointer-events: none; width: 240px; max-height: 224px; overflow: hidden; padding: 12px; border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow); background: var(--surface); color: var(--text); }
+.jj-item-hover .jj-item-preview { margin: 0; padding: 0; border: 0; }
+.jj-catalog-body { display: flex; height: min(480px, 58vh); min-height: 140px; overflow: hidden; border-top: 1px solid var(--border); }
+.jj-catalog-body .jj-inspector { flex-basis: 245px; width: 245px; }
+.jj-catalog-body .jj-field { margin-top: 14px; }
+.jj-catalog-status { margin: 0; padding: 9px 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+.jj-view-toggle { display: flex; gap: 3px; }
+.jj-view-toggle [aria-pressed='true'] { border-color: var(--accent); background: var(--selected); color: var(--accent); }
+.jj-skill-map { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; background: var(--input); }
+.jj-map-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 9px; border-bottom: 1px solid var(--border); }
+.jj-skill-map > svg { display: block; flex: 1; width: 100%; min-height: 0; touch-action: none; cursor: grab; background-image: radial-gradient(var(--border) 0.7px, transparent 0.7px); background-size: 15px 15px; }
+.jj-skill-map > svg:active { cursor: grabbing; }
+.jj-skill-map line { stroke: var(--muted); stroke-width: 1; opacity: .46; vector-effect: non-scaling-stroke; pointer-events: none; }
+.jj-skill-map line.learned { stroke: var(--accent); stroke-width: 1.8; opacity: 1; }
+.jj-map-node { --node: var(--muted); color: var(--text); }
+.jj-map-node[data-group='Warrior'] { --node: var(--danger); }
+.jj-map-node[data-group='Mage'] { --node: var(--accent); }
+.jj-map-node[data-group='Ranger'] { --node: var(--success); }
+.jj-map-node[role='button'] { cursor: pointer; outline: none; }
+.jj-map-node .jj-map-dot { fill: var(--surface-alt); stroke: var(--node); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.jj-map-node.learned .jj-map-dot { fill: color-mix(in srgb, var(--node) 55%, var(--surface)); }
+.jj-map-node.reachable .jj-map-dot { stroke-width: 2; }
+.jj-map-node.selected .jj-map-dot, .jj-map-node:focus-visible .jj-map-dot, .jj-map-node:hover .jj-map-dot { stroke: var(--accent); stroke-width: 2.5; }
+.jj-map-node image, .jj-map-node text { pointer-events: none; }
+.jj-map-node text { fill: var(--text); stroke: var(--input); stroke-width: 4; paint-order: stroke; font-size: 19px; font-weight: 650; }
 .jj-properties { display: grid; grid-template-columns: 1fr 1fr; gap: 13px 12px; }
 .jj-field { display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: var(--muted); min-width: 0; }
 .jj-field input, .jj-field select { width: 100%; color: var(--text); font-size: 12px; }
@@ -158,6 +183,7 @@ svg { flex-shrink: 0; }
 .jj-overlay { position: fixed; inset: 0; background: #0007; display: flex; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
 .jj-dialog { width: 520px; max-width: 95vw; max-height: 90vh; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
 .jj-dialog.wide { width: 900px; }
+.jj-dialog.jj-catalog { width: 1050px; }
 .jj-dialog > header { display: flex; align-items: center; justify-content: space-between; padding: 15px 18px; background: var(--surface-alt); border-bottom: 1px solid var(--border); }
 .jj-dialog > header > h2 { margin: 0; font-size: 14px; }
 .jj-icon-button { display: grid; place-items: center; background: none; border: 0; color: var(--muted); padding: 3px; }

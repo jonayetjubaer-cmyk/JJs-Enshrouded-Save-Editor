@@ -44,7 +44,7 @@ test('switching immediately updates language, screen-reader locale and persisted
 
 test('every interface, validation and dynamic label has all three translations', () => {
   const keys = new Set(Object.values(errors));
-  const files = ['src/JJApp.jsx', 'src/desktop-panels.jsx', 'src/close-handler.mjs', 'src/editor-model.mjs', 'src/tauri-api.js', 'src/treecheck.js', 'src/ItemStats.jsx'];
+  const files = ['src/JJApp.jsx', 'src/desktop-panels.jsx', 'src/DesktopSkillTree.jsx', 'src/close-handler.mjs', 'src/editor-model.mjs', 'src/tauri-api.js', 'src/treecheck.js', 'src/ItemStats.jsx'];
   for (const file of files) walk(parse(read(file), { sourceType: 'module', plugins: ['jsx'] }), (node) => {
     if (node.type === 'CallExpression' && ['t', 'tn'].includes(node.callee.name)) for (const argument of node.arguments.slice(0, node.callee.name === 'tn' ? 2 : 1)) if (argument.type === 'StringLiteral') keys.add(canonical(argument.value));
     if (node.type === 'VariableDeclarator' && ['TABS', 'RARITY', 'EQUIPMENT'].includes(node.id.name)) walk(node.init, (n) => {

@@ -410,5 +410,22 @@
   "Ambiguous equipment/inventory layout in this save.": "La struttura di equipaggiamento e inventario in questo salvataggio è ambigua.",
   "Unknown inventory items must stay unchanged. Edit or remove them in the game first.": "Gli oggetti sconosciuti nell’inventario devono rimanere invariati. Modificali o rimuovili prima nel gioco.",
   "Unknown item #{v0}": "Oggetto sconosciuto #{v0}",
-  "This item is not in the catalogue. It will be preserved unchanged when you save. Edit or remove it in the game first.": "Questo oggetto non è nel catalogo. Verrà conservato invariato al salvataggio. Modificalo o rimuovilo prima nel gioco."
+  "This item is not in the catalogue. It will be preserved unchanged when you save. Edit or remove it in the game first.": "Questo oggetto non è nel catalogo. Verrà conservato invariato al salvataggio. Modificalo o rimuovilo prima nel gioco.",
+  "There are not enough free slots for the selected items.": "Non ci sono abbastanza slot liberi per gli oggetti selezionati.",
+  "Zoom out": "Riduci zoom",
+  "Zoom in": "Aumenta zoom",
+  "Fit tree": "Mostra tutto l’albero",
+  "Drag the background to pan. Select a node to change its rank.": "Trascina lo sfondo per spostarti. Seleziona un nodo per cambiarne il grado.",
+  "Interactive skill tree": "Albero delle abilità interattivo",
+  "Add items from catalog": "Aggiungi oggetti dal catalogo",
+  "Item catalog": "Catalogo oggetti",
+  "Selected only": "Solo selezionati",
+  "Select a row to see a larger preview.": "Seleziona una riga per vedere un’anteprima più grande.",
+  "{v0} selected · {v1} free slots": "{v0} selezionati · {v1} slot liberi",
+  "Clear selection": "Annulla selezione",
+  "Add selected": "Aggiungi selezionati",
+  "Added {v0} item type to pending changes.": "{v0} tipo di oggetto aggiunto alle modifiche in sospeso.",
+  "Added {v0} item types to pending changes.": "{v0} tipi di oggetto aggiunti alle modifiche in sospeso.",
+  "Skill list": "Elenco abilità",
+  "Skill tree": "Albero delle abilità"
 }
